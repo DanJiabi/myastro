@@ -1,0 +1,27 @@
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+# 数据不进 git
+data/
+*.fits
+*.fit
+*.fz
+*.csv
+out/
+*.png
+!docs/**/*.png
+.env
+lightkurve-cache/
+
+# 构建产物：可再生产物不进 git（发布时由 CI/本地构建生成）
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+
+# 本机环境路径（每台机器不同，不进版本控制）
+.myastro-env
+
+# 编辑器配置（个人设置不进版本库）
+.vscode/

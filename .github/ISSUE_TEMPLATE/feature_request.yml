@@ -1,0 +1,20 @@
+name: Feature request
+description: A capability, source, or workflow that would help you.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do
+      description: Describe the astronomy/data problem, not only the API you want.
+    validations: {required: true}
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behaviour
+    validations: {required: false}
+  - type: markdown
+    attributes:
+      value: >
+        New data sources are welcome: they are a registry entry plus a download
+        function. See `CONTRIBUTING.md` and `docs/capabilities.md`.

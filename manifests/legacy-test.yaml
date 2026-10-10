@@ -1,0 +1,4 @@
+source: legacy-surveys
+dest_dir: legacy/dr10/
+files:
+  - url: "https://portal.nersc.gov/cfs/cosmo/data/legacysurvey/dr10/south/tractor/000/tractor-0001m002.fits"

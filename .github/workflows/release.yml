@@ -1,0 +1,45 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:        # 手动触发：只构建，不发布（用于演练）
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install build twine
+      - run: python -m build
+      - run: twine check dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/*
+
+  # 正式发布走 PyPI Trusted Publishing（OIDC，无需长期 token）。
+  # 一次性准备：在 PyPI 项目设置里添加 trusted publisher：
+  #   owner=DanJiabi  repo=myastro  workflow=release.yml  environment=pypi
+  publish:
+    # 需要先在 PyPI 项目设置里添加 trusted publisher（owner/repo/workflow/environment），
+    # 然后在仓库 Settings → Variables 里设 PYPI_READY=true 才会真正发布。
+    # 这样"标签+构建"始终可验证，而发布不会在配置完成前把 CI 弄红。
+    if: startsWith(github.ref, 'refs/tags/v') && vars.PYPI_READY == 'true'
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - uses: pypa/gh-action-pypi-publish@release/v1

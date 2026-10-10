@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff pyflakes
+      - name: ruff
+        run: ruff check src tests
+      - name: pyflakes
+        run: pyflakes src tests
+
+  test:
+    # 全量测试是离线的（网络在测试里被 stub），所以 CI 不需要任何凭据
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python: ["3.11", "3.12", "3.13"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+      - name: Install
+        run: pip install -e ".[test]"
+      - name: Tests
+        run: pytest -q
+      - name: Docs and registries must not drift
+        run: |
+          myastro test-map --check
+          myastro doc-sync
+          git diff --exit-code
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install build twine
+      - name: Build sdist + wheel
+        run: python -m build
+      - name: Check metadata
+        run: twine check dist/*
+      - name: Install the wheel and smoke test
+        run: |
+          # 带依赖安装：--no-deps 会让 doctor 因缺依赖必然报错（首次 CI 就是这样红的）
+          pip install dist/*.whl
+          myastro --version
+          export MYASTRO_DATA="$RUNNER_TEMP/data" MYASTRO_DB="$RUNNER_TEMP/astro.db"
+          myastro init
+          myastro doctor
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/*

@@ -1,0 +1,5 @@
+source: unwise
+dest_dir: unwise/
+files:
+  - url: "https://unwise.me/cutout_fits?version=neo7&ra=97.14&dec=30.49&size=100&bands=w1"
+    out: unwise_rtaur_w1_100px.fits

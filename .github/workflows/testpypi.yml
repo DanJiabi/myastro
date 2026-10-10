@@ -1,0 +1,21 @@
+name: TestPyPI dry run
+
+on:
+  workflow_dispatch:        # 手动：把当前 main 构建后发到 TestPyPI 验证安装链路
+
+jobs:
+  publish-testpypi:
+    runs-on: ubuntu-latest
+    environment: testpypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install build
+      - run: python -m build
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/

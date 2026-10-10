@@ -1,0 +1,97 @@
+[project]
+name = "myastro"
+version = "0.3.0"
+description = "Personal astronomy data toolkit: fetch, ledger, dedup, coverage, TUI"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+keywords = ["astronomy", "astroquery", "data-management", "tui", "tess", "ztf", "legacy-survey"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Astronomy",
+]
+requires-python = ">=3.11"
+dependencies = [
+    # ── 核心：`import myastro` 与既有能力（获取/账本/检索/TUI/光变）所需 ──
+    "astropy",
+    "astroquery",
+    "lightkurve",
+    "transitleastsquares",
+    "numpy",            # 已顶层使用（曾漏声明，靠 astropy 传递安装）
+    "pandas",
+    "pyarrow",          # parquet 读写（14 处 to_parquet/read_parquet）
+    "pyyaml",           # manifest 清单
+    "requests",
+    "textual",          # TUI
+]
+
+[project.urls]
+Homepage = "https://github.com/DanJiabi/myastro"
+Repository = "https://github.com/DanJiabi/myastro"
+Issues = "https://github.com/DanJiabi/myastro/issues"
+Changelog = "https://github.com/DanJiabi/myastro/blob/main/CHANGELOG.md"
+
+[project.optional-dependencies]
+# 处理能力（P2 测光 / P3 成像）与 notebook 所需：核心安装不强制拉这些重包
+processing = ["photutils", "astroalign", "ccdproc", "scipy", "matplotlib", "skyfield"]
+# 特定源的可选后端（懒加载，缺了只影响该源）
+asassn = ["pyasassn"]
+ztfquery = ["ztfquery"]
+# ztfquery 是 ztf-fields 索引构建的后端：本地索引/覆盖率相关测试需要它，
+# 故列进 test extra（对普通用户仍是可选的 [ztfquery]）
+test = ["pytest", "pytest-asyncio", "ruff", "pyflakes", "ztfquery"]
+dev = ["pytest", "pytest-asyncio", "ruff", "pyflakes", "jupyterlab"]   # notebook 另需 .[processing]
+
+[project.scripts]
+myastro = "myastro.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/myastro"]
+
+[tool.hatch.build.targets.sdist]
+# 发布产物的内容要**逐项有理由**，不靠"默认把仓库里所有东西都塞进去"。
+# 排除 notebooks 的理由：占 2.2MB（输出占 97–99%），且执行输出里含本机绝对路径
+# （实测 notebook 01 的 traceback 里有 /Users/... 路径）。示例页改在文档站发布，
+# 脱敏（清空输出）需要本人确认后进行，见 docs/release.md §3。
+include = [
+    "src/",
+    "tests/",
+    "docs/",
+    "manifests/",
+    "githooks/",
+    "LICENSE",
+    "README.md",
+    "CHANGELOG.md",
+    "constraints.txt",
+    "pyproject.toml",
+]
+# requirements-lock.txt 是本机 conda 环境记录（含 conda 的 file:// 源，别人装不上），
+# 只留在仓库里，不进发布产物；pip 用户请用 constraints.txt。
+exclude = [".vscode/", "notebooks/", "requirements-lock.txt", ".gitignore",
+           "**/__pycache__/", "*.pyc"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--strict-markers"
+markers = [
+    "cap(id): 该测试证明的领域能力（id 见 docs/test-map.md，能力定义见 docs/capabilities.md）",
+    "unit: 纯逻辑层（无 db/网络/TUI）",
+    "kernel: 内核层（真 sqlite，网络打桩）",
+    "sources: 数据源契约层",
+    "facade: 门面契约层（只用公开 API）",
+    "ui: TUI 层（headless textual）",
+    "cli: CLI 层（子命令的参数接线与退出码）",
+    "guards: 设计守卫层",
+]

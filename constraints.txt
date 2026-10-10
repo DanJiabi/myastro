@@ -1,0 +1,20 @@
+# 已知可用的依赖版本（用于可复现安装）
+#
+#   pip install -c constraints.txt myastro
+#
+# 这些是 0.2.0 开发与测试时使用过的版本，不强制锁定——没有特别需要时
+# 直接 `pip install myastro` 即可。注意 transitleastsquares 需 >=2.0：
+# 2.0 起自带凌星模型（不再需要 batman）且算法有变化，1.x 的 API 不同。
+astropy==8.0.1
+astroquery==0.4.11
+lightkurve==2.6.0
+transitleastsquares==2.0
+numpy==2.5.3
+pandas==2.3.3
+pyarrow==25.0.0
+PyYAML==6.0.3
+requests==2.34.2
+textual==8.2.8
+rich==15.0.0
+numba==0.68.0
+scipy==1.18.1

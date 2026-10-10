@@ -1,0 +1,28 @@
+name: Bug report
+description: Something behaved wrongly, crashed, or reported the wrong thing.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: Include the exact command or API call and the output.
+    validations: {required: true}
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations: {required: true}
+  - type: textarea
+    id: doctor
+    attributes:
+      label: "`myastro doctor` output"
+      description: Helps a lot — it reports versions, platform, ledger and filesystem state.
+      render: text
+    validations: {required: false}
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: "`myastro --version`"
+    validations: {required: true}

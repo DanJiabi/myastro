@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+# pre-push 钩子：推送前跑提交门（pytest + pyflakes）。
+#
+# 为什么版本化在仓库里（githooks/）而不是 .git/hooks/：
+#   .git/hooks 不入版本控制，新机器/重克隆就丢了；这里用
+#   `git config core.hooksPath githooks` 指向版本化目录，部署一条命令。
+#
+# 安装：  git config core.hooksPath githooks
+# 跳过：  git push --no-verify      （git 内建，慎用）
+#
+# 注意：不使用管道（`pytest | tail` 会把退出码换成 tail 的 0，
+# 让红灯溜过提交门——这是项目里真实踩过的坑，见 docs/testing.md §5）。
+
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT"
+
+# ── 解析解释器（逐个候选预检，宁慢一点也不要"看起来跑了"）──
+# 候选顺序：环境变量 → 仓库内 .myastro-env（gitignore，写一行 env 的 bin 目录）
+#           → 当前虚拟环境 → 项目内 .venv → PATH 上的 python3/python。
+# 不硬编码任何本机 conda 路径：那不可移植，也会让别人的 push 神秘失败。
+# 预检跑 `pytest --collect-only`：能 import pytest 但缺项目依赖的解释器
+# （例如系统 python3）会在这里被淘汰，而不是在正式跑时报一堆 conftest 错误。
+ENV_BIN="${MYASTRO_ENV_BIN:-}"
+if [[ -z "$ENV_BIN" && -f "$ROOT/.myastro-env" ]]; then
+    ENV_BIN="$(head -n1 "$ROOT/.myastro-env" | tr -d '[:space:]')"
+fi
+
+PY=""
+for cand in "${ENV_BIN:+$ENV_BIN/python}" \
+            "${VIRTUAL_ENV:+$VIRTUAL_ENV/bin/python}" \
+            "$ROOT/.venv/bin/python" \
+            "$(command -v python3 2>/dev/null)" \
+            "$(command -v python 2>/dev/null)"; do
+    [[ -n "$cand" && -x "$cand" ]] || continue
+    "$cand" -c "import pytest" >/dev/null 2>&1 || continue
+    "$cand" -m pytest --collect-only -q >/dev/null 2>&1 || continue
+    PY="$cand"
+    break
+done
+
+if [[ -z "$PY" ]]; then
+    echo "✗ pre-push: 找不到可用的项目环境（需要装了项目依赖 + pytest 的解释器）。" >&2
+    echo "  修复（任选其一）：" >&2
+    echo "    conda activate <你的环境>        # 或 source .venv/bin/activate" >&2
+    echo "    export MYASTRO_ENV_BIN=<env>/bin" >&2
+    echo "    echo <env>/bin > .myastro-env    # 仓库内固定（已 gitignore）" >&2
+    exit 1
+fi
+
+echo "▶ pre-push: pytest（全量，约 45s）"
+# 直接执行、不经管道：退出码必须原样冒泡
+if ! "$PY" -m pytest -q; then
+    echo "✗ pre-push: 测试未通过，push 已中止（确需强推用 git push --no-verify）" >&2
+    exit 1
+fi
+
+if "$PY" -c "import pyflakes" >/dev/null 2>&1; then
+    echo "▶ pre-push: pyflakes（src + tests）"
+    if ! "$PY" -m pyflakes src tests; then
+        echo "✗ pre-push: pyflakes 有未用导入/未定义名，push 已中止" >&2
+        exit 1
+    fi
+else
+    echo "⚠ pre-push: 该解释器没有 pyflakes，已跳过这一项（建议 pip install pyflakes）" >&2
+fi
+
+echo "✓ pre-push: 提交门通过"

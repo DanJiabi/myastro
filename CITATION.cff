@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use myastro in your research, please cite it as below."
+title: "myastro: a personal astronomy data toolkit with a ledger"
+abstract: >-
+  Fetch data from public astronomy surveys while keeping a local ledger of what you
+  already have: deduplicated downloads, precise cone search over your own archive,
+  coverage against full catalogue indexes, integrity auditing, and a TUI.
+authors:
+  - family-names: DanJiabi
+    alias: DanJiabi
+repository-code: "https://github.com/DanJiabi/myastro"
+url: "https://github.com/DanJiabi/myastro"
+license: MIT
+license-url: "https://github.com/DanJiabi/myastro/blob/main/LICENSE"
+version: 0.3.0
+date-released: "2026-10-10"
+keywords:
+  - astronomy
+  - data-management
+  - surveys
+  - reproducibility
