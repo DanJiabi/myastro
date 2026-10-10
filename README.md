@@ -124,12 +124,16 @@ Developer docs are maintained in Chinese; user-facing docs are bilingual.
 
 ```bash
 git clone https://github.com/DanJiabi/myastro && cd myastro
-pip install -e ".[dev]"                 # or: pip install -e . pytest ruff pyflakes
+pip install -e ".[dev]"                 # or: pip install -e . pytest ruff pyflakes ztfquery
 git config core.hooksPath githooks      # versioned pre-push gate (full suite + pyflakes)
 pytest -q                               # 372 tests, offline (network is stubbed)
 pytest -m "unit or guards" -q           # fast lane (~3 s)
 myastro test-map && myastro doc-sync    # regenerate docs (guards fail when stale)
 ```
+
+> `requirements-lock.txt` is the maintainer's conda environment record (it contains
+> conda `file://` sources, so it is not a pip lock file). For reproducible pip installs
+> use `constraints.txt`.
 
 The pre-push hook resolves a usable interpreter itself (`MYASTRO_ENV_BIN` →
 `.myastro-env` → active venv → `.venv` → PATH, each pre-flighted with

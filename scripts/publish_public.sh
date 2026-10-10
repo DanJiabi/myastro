@@ -65,3 +65,9 @@ echo "▶ 打标签 ${VERSION}（指向公开快照）并推送"
 git tag -f -a "$VERSION" -m "$VERSION" "$COMMIT"
 git push -f "$REMOTE" "refs/tags/$VERSION"
 echo "✓ 公开仓已更新：https://github.com/$SLUG"
+cat <<'NOTE'
+注意：本地标签 $VERSION 现在指向**公开快照提交**（不是私有 main 的提交）。
+若要让私有仓的标签指向 main 的开发提交（推荐，便于 git describe）：
+  git tag -f -a $VERSION -m "$VERSION" main && git push origin refs/tags/$VERSION
+两个仓的同名标签指向不同提交对象但树相同——快照模型的必然结果，见 docs/release.md。
+NOTE
