@@ -200,3 +200,92 @@ class TestConnectionLifecycle:
         assert db.conn is not None
         assert db.conn.execute("SELECT 1").fetchone()[0] == 1   # 仍然可用
         db.close()
+
+
+@pytest.mark.cap("manage.ledger")
+class TestMigrationRobustness:
+    """迁移必须并发安全 + 幂等（0.3.1 之前：并发 init 会留下永久卡死的库）。
+
+    用户实测（MacBook，`myastro init & myastro doctor` 并行）：
+    `sqlite3.OperationalError: duplicate column name: dataset_id`，
+    且此后**每个命令都失败**——半迁移状态不自愈。
+    """
+
+    def _make_stale_version(self, db_path, version: int = 1):
+        """造出"结构已是最新、版本号却落后"的残局。"""
+        import sqlite3
+        DB(db_path).init().close()
+        conn = sqlite3.connect(db_path)
+        conn.execute(f"PRAGMA user_version={version}")
+        conn.commit()
+        conn.close()
+
+    def test_heals_stale_version_when_columns_exist(self, tmp_path):
+        from myastro.io.db import SCHEMA_VERSION
+        path = tmp_path / "stale.db"
+        self._make_stale_version(path, 1)
+        db = DB(path).init()                       # 曾经在这里抛 duplicate column
+        try:
+            assert db.conn.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION
+        finally:
+            db.close()
+
+    def test_concurrent_init_is_safe(self, tmp_path):
+        """多进程同时 init 同一个新库：全部成功，且最终版本/结构正确。
+
+        旧实现的 `executescript` 会隐式提交、拿不住锁，两个进程会各自跑一遍
+        ALTER；实测 6 进程必现 duplicate column。
+        这里用**独立解释器**（最贴近用户场景：`myastro init & myastro doctor`）。
+        """
+        import os
+        import subprocess
+        import sys
+        from pathlib import Path
+
+        from myastro.io.db import SCHEMA_VERSION
+
+        path = tmp_path / "race.db"
+        src = Path(__file__).resolve().parents[2] / "src"
+        env = dict(os.environ, MYASTRO_DB=str(path),
+                   PYTHONPATH=f"{src}{os.pathsep}{os.environ.get('PYTHONPATH', '')}")
+        code = ("from myastro.io.db import DB\n"
+                "db = DB().init()\n"
+                "print(db.conn.execute('PRAGMA user_version').fetchone()[0])\n"
+                "db.close()")
+        procs = [subprocess.Popen([sys.executable, "-c", code], env=env,
+                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                 for _ in range(6)]
+        results = []
+        for p_ in procs:
+            out, err = p_.communicate(timeout=60)
+            results.append((p_.returncode, out.decode().strip(), err.decode()[-200:]))
+        failed = [r for r in results if r[0] != 0]
+        assert not failed, f"并发 init 失败：{failed}"
+        # 自证：每个子进程都报告了迁移后的版本（不是"跑了个空壳还退出 0"）
+        versions = {r[1] for r in results}
+        assert versions == {str(SCHEMA_VERSION)}, f"子进程报告版本不一致：{versions}"
+
+        db = DB(path).init()
+        try:
+            assert db.conn.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION
+            cols = {r[1] for r in db.conn.execute("PRAGMA table_info(jobs)")}
+            assert {"dataset_id", "gid", "batch_id", "error_type"} <= cols
+        finally:
+            db.close()
+
+    def test_failed_migration_does_not_advance_version(self, tmp_path, monkeypatch):
+        """迁移中途失败必须回滚版本号（否则下次启动会跳过没应用的迁移）。"""
+        import sqlite3
+
+        from myastro.io import db as dbmod
+
+        path = tmp_path / "broken.db"
+        monkeypatch.setitem(dbmod._MIGRATIONS, 99, ("SELECT * FROM no_such_table",))
+        monkeypatch.setattr(dbmod, "SCHEMA_VERSION", 99)
+        with pytest.raises(sqlite3.OperationalError):
+            DB(path).init()
+        conn = sqlite3.connect(path)
+        try:
+            assert conn.execute("PRAGMA user_version").fetchone()[0] < 99
+        finally:
+            conn.close()

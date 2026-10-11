@@ -86,3 +86,21 @@ class TestDoctorChecks:
     def test_json_serializable(self, env):
         import json
         json.dumps([c.as_dict() for c in doctor.run()], ensure_ascii=False)
+
+
+@pytest.mark.cap("manage.doctor")
+def test_optional_dep_hint_uses_real_extra_name(env, monkeypatch):
+    """提示里的 pip 命令必须真能执行：发行名 ≠ extra 名（pyasassn → [asassn]）。"""
+    import importlib
+    real = importlib.import_module
+
+    def fake(mod, *a, **k):
+        if mod in ("pyasassn", "ztfquery"):
+            raise ImportError(mod)
+        return real(mod, *a, **k)
+
+    monkeypatch.setattr(doctor.importlib, "import_module", fake)
+    checks = {c.name: c for c in doctor._check_deps()}
+    assert "[asassn]" in checks["可选 pyasassn"].fix
+    assert "[ztfquery]" in checks["可选 ztfquery"].fix
+    assert "pyasassn]" not in checks["可选 pyasassn"].fix

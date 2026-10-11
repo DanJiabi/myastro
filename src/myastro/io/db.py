@@ -4,6 +4,7 @@
 """
 from __future__ import annotations
 
+import re
 import sqlite3
 from pathlib import Path
 from typing import Self
@@ -12,81 +13,54 @@ from .config import Config
 
 SCHEMA_VERSION = 8
 
-_MIGRATIONS: dict[int, str] = {
-    1: """
-    CREATE TABLE IF NOT EXISTS datasets (
-        id          INTEGER PRIMARY KEY,
-        source      TEXT NOT NULL,
-        target      TEXT,
-        params_json TEXT NOT NULL,
-        cache_key   TEXT NOT NULL UNIQUE,
-        created_at  TEXT NOT NULL DEFAULT (datetime('now')),
-        status      TEXT NOT NULL DEFAULT 'ok'
-    );
-    CREATE INDEX IF NOT EXISTS idx_datasets_source ON datasets(source);
-
-    CREATE TABLE IF NOT EXISTS files (
-        id          INTEGER PRIMARY KEY,
-        dataset_id  INTEGER NOT NULL REFERENCES datasets(id),
-        path        TEXT NOT NULL UNIQUE,
-        size        INTEGER NOT NULL DEFAULT 0,
-        sha256      TEXT,
-        remote_url  TEXT,
-        fetched_at  TEXT NOT NULL DEFAULT (datetime('now')),
-        format      TEXT
-    );
-    CREATE INDEX IF NOT EXISTS idx_files_dataset ON files(dataset_id);
-
-    CREATE TABLE IF NOT EXISTS jobs (
-        id            INTEGER PRIMARY KEY,
-        spec_json     TEXT NOT NULL,
-        executor      TEXT NOT NULL CHECK (executor IN ('python', 'aria2')),
-        url           TEXT,
-        dest          TEXT,
-        status        TEXT NOT NULL DEFAULT 'queued'
-                      CHECK (status IN ('queued','running','verifying',
-                                        'done','failed','orphaned')),
-        progress      REAL,
-        speed         REAL,
-        error         TEXT,
-        updated_at    TEXT NOT NULL DEFAULT (datetime('now')),
-        started_at    TEXT,
-        finished_at   TEXT,
-        file_id       INTEGER REFERENCES files(id)
-    );
-    CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs(status);
-    """,
-    2: """
-    ALTER TABLE jobs ADD COLUMN dataset_id INTEGER REFERENCES datasets(id);
-    CREATE INDEX IF NOT EXISTS idx_jobs_dataset ON jobs(dataset_id);
-    """,
-    3: """
-    ALTER TABLE jobs ADD COLUMN gid TEXT;
-    """,
-    4: """
-    ALTER TABLE jobs ADD COLUMN batch_id TEXT;
-    CREATE INDEX IF NOT EXISTS idx_jobs_batch ON jobs(batch_id);
-    """,
-    5: """
-    CREATE TABLE IF NOT EXISTS health (
-        source     TEXT PRIMARY KEY,
-        status     TEXT NOT NULL,
-        detail     TEXT,
-        checked_at TEXT NOT NULL
-    );
-    """,
-    6: """
-    ALTER TABLE datasets ADD COLUMN meta_json TEXT;
-    """,
-    7: """
-    ALTER TABLE jobs ADD COLUMN error_type TEXT;
-    """,
-    8: """
-    ALTER TABLE datasets ADD COLUMN ra REAL;
-    ALTER TABLE datasets ADD COLUMN dec REAL;
-    CREATE INDEX IF NOT EXISTS idx_datasets_pos ON datasets(ra, dec);
-    """,
+_MIGRATIONS: dict[int, tuple[str, ...]] = {
+    1: (
+        "CREATE TABLE IF NOT EXISTS datasets (\n        id          INTEGER PRIMARY KEY,\n        source      TEXT NOT NULL,\n        target      TEXT,\n        params_json TEXT NOT NULL,\n        cache_key   TEXT NOT NULL UNIQUE,\n        created_at  TEXT NOT NULL DEFAULT (datetime('now')),\n        status      TEXT NOT NULL DEFAULT 'ok'\n    )",
+        'CREATE INDEX IF NOT EXISTS idx_datasets_source ON datasets(source)',
+        "CREATE TABLE IF NOT EXISTS files (\n        id          INTEGER PRIMARY KEY,\n        dataset_id  INTEGER NOT NULL REFERENCES datasets(id),\n        path        TEXT NOT NULL UNIQUE,\n        size        INTEGER NOT NULL DEFAULT 0,\n        sha256      TEXT,\n        remote_url  TEXT,\n        fetched_at  TEXT NOT NULL DEFAULT (datetime('now')),\n        format      TEXT\n    )",
+        'CREATE INDEX IF NOT EXISTS idx_files_dataset ON files(dataset_id)',
+        "CREATE TABLE IF NOT EXISTS jobs (\n        id            INTEGER PRIMARY KEY,\n        spec_json     TEXT NOT NULL,\n        executor      TEXT NOT NULL CHECK (executor IN ('python', 'aria2')),\n        url           TEXT,\n        dest          TEXT,\n        status        TEXT NOT NULL DEFAULT 'queued'\n                      CHECK (status IN ('queued','running','verifying',\n                                        'done','failed','orphaned')),\n        progress      REAL,\n        speed         REAL,\n        error         TEXT,\n        updated_at    TEXT NOT NULL DEFAULT (datetime('now')),\n        started_at    TEXT,\n        finished_at   TEXT,\n        file_id       INTEGER REFERENCES files(id)\n    )",
+        'CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs(status)',
+    ),
+    2: (
+        'ALTER TABLE jobs ADD COLUMN dataset_id INTEGER REFERENCES datasets(id)',
+        'CREATE INDEX IF NOT EXISTS idx_jobs_dataset ON jobs(dataset_id)',
+    ),
+    3: (
+        'ALTER TABLE jobs ADD COLUMN gid TEXT',
+    ),
+    4: (
+        'ALTER TABLE jobs ADD COLUMN batch_id TEXT',
+        'CREATE INDEX IF NOT EXISTS idx_jobs_batch ON jobs(batch_id)',
+    ),
+    5: (
+        'CREATE TABLE IF NOT EXISTS health (\n        source     TEXT PRIMARY KEY,\n        status     TEXT NOT NULL,\n        detail     TEXT,\n        checked_at TEXT NOT NULL\n    )',
+    ),
+    6: (
+        'ALTER TABLE datasets ADD COLUMN meta_json TEXT',
+    ),
+    7: (
+        'ALTER TABLE jobs ADD COLUMN error_type TEXT',
+    ),
+    8: (
+        'ALTER TABLE datasets ADD COLUMN ra REAL',
+        'ALTER TABLE datasets ADD COLUMN dec REAL',
+        'CREATE INDEX IF NOT EXISTS idx_datasets_pos ON datasets(ra, dec)',
+    ),
 }
+
+
+# ADD COLUMN 语句（用于幂等判断：并发或中断后可能"列已存在但版本号落后"）
+_ADD_COLUMN_RE = re.compile(r"^\s*ALTER\s+TABLE\s+(\w+)\s+ADD\s+COLUMN\s+(\w+)",
+                            re.IGNORECASE)
+
+
+def _add_column_already_applied(conn: sqlite3.Connection, stmt: str) -> bool:
+    m = _ADD_COLUMN_RE.match(stmt)
+    if not m:
+        return False
+    table, column = m.group(1), m.group(2)
+    return column in {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
 
 
 class DB:
@@ -106,13 +80,37 @@ class DB:
         return self
 
     def _migrate(self) -> None:
+        """应用迁移：**并发安全 + 幂等**，可自愈"半迁移"状态。
+
+        两道保险（0.3.2 修，事故见 CHANGELOG）：
+        1. **串行化**：`BEGIN IMMEDIATE` 拿写锁后再读版本、执行 DDL，并在锁内重读一次。
+           两个进程同时 `myastro init`（或 TUI 与 CLI 并发）不会再各自跑一遍 ALTER。
+           注意**不能用 `executescript`**：它会隐式提交，锁随即丢失——那正是原实现
+           在并发下报 `duplicate column name` 的原因。因此迁移以单条语句存储。
+        2. **幂等**：`ALTER TABLE ... ADD COLUMN` 前先查 `table_info`，已存在就跳过。
+           这样"版本号落后但列已存在"的残局能自动修好，而不是永久卡死
+           （用户实测：一旦卡住，之后每个命令都报同一个 duplicate column 错误）。
+        """
         assert self.conn is not None
-        current = self.conn.execute("PRAGMA user_version").fetchone()[0]
-        for version in sorted(_MIGRATIONS):
-            if version > current:
-                self.conn.executescript(_MIGRATIONS[version])
-                self.conn.execute(f"PRAGMA user_version={version}")
-                self.conn.commit()
+        conn = self.conn
+        conn.execute("PRAGMA busy_timeout=10000")      # 等锁而不是立刻失败
+        if conn.execute("PRAGMA user_version").fetchone()[0] >= SCHEMA_VERSION:
+            return
+        conn.execute("BEGIN IMMEDIATE")
+        try:
+            current = conn.execute("PRAGMA user_version").fetchone()[0]
+            for version in sorted(_MIGRATIONS):
+                if version <= current:
+                    continue
+                for stmt in _MIGRATIONS[version]:
+                    if _add_column_already_applied(conn, stmt):
+                        continue                            # 幂等：列已存在
+                    conn.execute(stmt)
+                conn.execute(f"PRAGMA user_version={version}")
+            conn.commit()
+        except BaseException:
+            conn.rollback()
+            raise
 
     def close(self) -> None:
         if self.conn is not None:

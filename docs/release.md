@@ -180,6 +180,27 @@ gh release create vX.Y.Z --title "myastro X.Y.Z" --notes-file /tmp/release_notes
   - 实测：0.3.0 的 wheel 与 sdist 在 PyPI 与 TestPyPI 上 **sha256 完全相同**
     （两次独立构建字节一致），说明当前 hatchling 构建是可复现的。
 
+## 10.3 发布演练记录（0.3.1，2026-10-11）
+
+首次走完整链路（含新加的人工审批闸门），每步都有可核对的证据：
+
+| 步骤 | 命令 / 动作 | 观察到什么 |
+|---|---|---|
+| 1 | 改版本 + CHANGELOG + 双语 install 文档；`pip install -e .` | `myastro --version` → 0.3.1（可编辑安装的元数据需重装才刷新） |
+| 2 | `pytest && ruff && pyflakes`；`test-map`/`doc-sync` | 375 测试、ruff 0、pyflakes 0；生成物已更新 |
+| 3 | `scripts/publish_public.sh v0.3.1` | 公开仓 main 得到快照提交，标签 `v0.3.1` 推送成功 |
+| 4 | 标签触发 Release 工作流 | `build` 自动完成；**`publish` 停在 `waiting`**（环境 `pypi` 的 required reviewer 生效） |
+| 5 | 人工在 Actions 页面 Review deployments → Approve | `publish` 转 success；日志可见 `Uploading myastro-0.3.1-py3-none-any.whl` |
+| 6 | 查询 PyPI JSON API | 一开始仍显示 0.3.0（**API 缓存**），随后 simple index 与 JSON 都出现 0.3.1 |
+| 7 | `pip download myastro==0.3.1` | 报 "from versions: 0.3.0" —— **pip 自己的 HTTP 缓存**；加 `--no-cache-dir` 后正常 |
+| 8 | sha256 比对 + 装进独立 venv | 下载文件摘要与 PyPI 公布摘要一致；`myastro --version` = 0.3.1、`doctor` 退出码 0 |
+| 9 | 验证修复在产物里生效 | 从 PyPI 装的 0.3.1 跑 `doctor`，`tpfmodel` 警告出现 **0 次**（0.3.0 会打印） |
+| 10 | `gh release create v0.3.1` | Release 页面生成，Latest 指向 0.3.1 |
+
+**两条新学到的坑**（已写进 §10.2）：发布后立刻查询/安装时，
+① PyPI 的 JSON API 与 simple index 有 CDN 缓存；② pip 自身有 HTTP 缓存
+（`pip download pkg==新版本` 会看不到，用 `--no-cache-dir`）。
+
 ## 11. 0.2.0 冻结计划（已完成，保留作记录）
 
 拆成语义化提交（每个提交都能独立通过全量门）：

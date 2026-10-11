@@ -4,7 +4,7 @@
 
 能力 id 定义在 `src/myastro/io/testmap.py`；能力说明与成熟度见 [capabilities.md](capabilities.md)。
 
-共 23 项能力、1298 个测试。
+共 23 项能力、1307 个测试。
 
 | 能力 | 说明 | 测试数 |
 |---|---|---|
@@ -19,7 +19,7 @@
 | `acquire.cancel` | 取消与作业记录删除（资产保留） | 3 |
 | `acquire.manifest` | 清单（YAML）批量获取 | 2 |
 | `acquire.schedule` | 定时任务（launchd 代理的生成与装卸） | 4 |
-| `manage.ledger` | 账本：schema/迁移、缓存身份、meta 溯源、原子写 | 24 |
+| `manage.ledger` | 账本：schema/迁移、缓存身份、meta 溯源、原子写 | 28 |
 | `manage.integrity` | 完整性巡检：sha 基线、损坏与缺失检测 | 11 |
 | `manage.search` | 本地检索（目标/坐标/时间） | 31 |
 | `manage.coverage` | 索引覆盖率统计 | 6 |
@@ -27,7 +27,7 @@
 | `process.lc` | 时序处理工具：归一化、折叠、周期搜索、凌星搜索 | 18 |
 | `present.tui` | TUI 行为：面板、键位、身份寻址、格式化 | 731 |
 | `present.cli` | CLI 行为：子命令参数接线、输出与退出码 | 27 |
-| `manage.doctor` | 环境自检：依赖/路径可写/账本/文件系统/索引/平台 | 10 |
+| `manage.doctor` | 环境自检：依赖/路径可写/账本/文件系统/索引/平台 | 15 |
 | `manage.backup` | 账本备份与恢复：在线备份、默认拒绝覆盖、安全副本 | 23 |
 | `facade.api` | 门面契约：错误分类、参数校验、执行器隐身 | 3 |
 | `design.guards` | 设计守卫：文档同步、边界规则、能力覆盖 | 217 |
@@ -265,6 +265,10 @@
 - `tests/kernel/test_db.py::TestDB::test_reinit_idempotent`
 - `tests/kernel/test_db.py::TestDB::test_roundtrip_dataset_file`
 - `tests/kernel/test_db.py::TestDB::test_wal_mode`
+- `tests/kernel/test_db.py::TestMigrationRobustness::_make_stale_version`
+- `tests/kernel/test_db.py::TestMigrationRobustness::test_concurrent_init_is_safe`
+- `tests/kernel/test_db.py::TestMigrationRobustness::test_failed_migration_does_not_advance_version`
+- `tests/kernel/test_db.py::TestMigrationRobustness::test_heals_stale_version_when_columns_exist`
 - `tests/kernel/test_jobs.py::TestMetaPersisted::test_cache_hit_returns_meta`
 - `tests/kernel/test_jobs.py::TestMetaPersisted::test_empty_meta_does_not_clobber`
 - `tests/kernel/test_path_containment.py::TestDataRootContainment::test_escape_rejected_and_nothing_written`
@@ -1148,6 +1152,11 @@
 - `tests/kernel/test_doctor.py::TestDoctorChecks::test_schema_ahead_of_code_is_failure`
 - `tests/kernel/test_doctor.py::TestDoctorChecks::test_unwritable_data_root_is_failure`
 - `tests/kernel/test_doctor.py::TestDoctorChecks::test_version_tuple_comparison`
+- `tests/kernel/test_doctor.py::test_optional_dep_hint_uses_real_extra_name`
+- `tests/kernel/test_doctor.py::test_optional_dep_hint_uses_real_extra_name`
+- `tests/kernel/test_doctor.py::test_optional_dep_hint_uses_real_extra_name`
+- `tests/kernel/test_doctor.py::test_optional_dep_hint_uses_real_extra_name`
+- `tests/kernel/test_doctor.py::test_optional_dep_hint_uses_real_extra_name`
 
 ### `manage.backup` — 账本备份与恢复：在线备份、默认拒绝覆盖、安全副本
 

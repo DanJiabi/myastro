@@ -35,6 +35,9 @@ CORE_DEPS: list[tuple[str, str, str | None]] = [
     ("textual", "textual", None),
     ("transitleastsquares", "transitleastsquares", "2.0"),
 ]
+# 发行名 → pyproject 里的 extra 名（提示命令必须能真的跑通）
+OPTIONAL_EXTRAS = {"pyasassn": "asassn", "ztfquery": "ztfquery"}
+
 OPTIONAL_DEPS: list[tuple[str, str, str]] = [
     ("pyasassn", "pyasassn", "asassn 源"),
     ("ztfquery", "ztfquery", "ztf-fields 索引构建"),
@@ -122,8 +125,9 @@ def _check_deps() -> list[Check]:
             importlib.import_module(mod)
             out.append(Check(f"可选 {dist}", OK, f"{md.version(dist)}（{why}）"))
         except Exception:                            # noqa: BLE001
+            extra = OPTIONAL_EXTRAS.get(dist, dist)   # 发行名 ≠ extra 名（实测踩过）
             out.append(Check(f"可选 {dist}", WARN, f"未安装（{why} 不可用）",
-                             f"pip install 'myastro[{dist if dist != 'ztfquery' else 'ztfquery'}]'"))
+                             f"pip install 'myastro[{extra}]'"))
     return out
 
 

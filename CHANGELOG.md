@@ -3,6 +3,26 @@
 本文件记录对使用者有影响的变更。格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [0.3.2] - 2026-10-11
+
+### 修复
+
+- **并发迁移会把账本弄成"永久打不开"的状态**（用户实测：在新机器上跑
+  `myastro init & myastro doctor`，之后每个命令都报
+  `sqlite3.OperationalError: duplicate column name: dataset_id`）。
+  原因是迁移过程不原子：`executescript()` 会**隐式提交**，拿不住锁，两个进程
+  同时从 v1 开始各自执行一遍 `ALTER TABLE`；一旦某个版本的 DDL 提交了、
+  版本号却没落下，库就永久卡在"版本落后但列已存在"的残局。
+  现在两道保险：
+  1. **串行化**：`BEGIN IMMEDIATE` 拿写锁后（10s busy timeout）在锁内重读版本再执行
+     DDL，并把迁移改为**单条语句**存储（正是为了不用 `executescript`）；
+  2. **幂等**：`ADD COLUMN` 前查 `table_info`，已存在即跳过——上面那种残局**自愈**。
+  验证：6 个独立进程并发 init × 3 轮全部成功；构造"版本 1 + 列已存在"的残局后
+  `init` 自动修到 8。结构与旧实现逐表逐列比对一致。
+- `doctor` 的可选依赖提示给出了不存在的 extra 名（`myastro[pyasassn]`），
+  实际是 `myastro[asassn]`——照着提示装会失败。已按"发行名 → extra 名"映射修正，
+  并加测试断言提示里的命令真能执行。
+
 ## [0.3.1] - 2026-10-10
 
 ### 修复
@@ -90,3 +110,4 @@
 
 [0.2.0]: https://github.com/DanJiabi/myastro/releases/tag/v0.2.0
 [0.3.1]: https://github.com/DanJiabi/myastro/releases/tag/v0.3.1
+[0.3.2]: https://github.com/DanJiabi/myastro/releases/tag/v0.3.2

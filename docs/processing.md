@@ -261,6 +261,26 @@ ztf-lc 的公开 API 不需要凭据。匿名配额是否够用**未实测**，�
   这个坑在测试里真实出现过。恢复后再跑一次迁移（备份可能是旧 schema）。
 - 校验来源：必须是含 datasets/files/jobs 表的 SQLite，且 schema 不超前。
 
+## 8.6 账本迁移的并发与自愈（0.3.2 修）
+
+**规则：迁移必须原子、串行、幂等。**
+
+- **原子**：整段迁移在一个事务里（`BEGIN IMMEDIATE` → DDL → 更新 `user_version` → commit），
+  任一步失败则 `rollback`，版本号不前进（否则下次启动会跳过没应用的迁移）。
+- **串行**：拿写锁后再读 `user_version` 并在锁内重读，配合 10s `busy_timeout`，
+  多个进程同时 `init`（或 TUI 与 CLI 并发）会排队而不是互相踩。
+  **不能用 `executescript()`**——它会隐式提交、锁随即丢失；这也是迁移以
+  **单条语句元组**存储的原因。
+- **幂等**：`ALTER TABLE ... ADD COLUMN` 前查 `table_info`，已存在即跳过。
+  这样"版本号落后但列已存在"的残局（并发或中断残留）会**自愈**。
+
+为什么值得这么大动静：迁移失败的代价是**账本永久打不开**——用户实测在新机器上
+`myastro init & myastro doctor` 并行后，此后每个命令都报
+`duplicate column name: dataset_id`，且没有恢复路径（0.3.2 起自动修好）。
+
+守卫：`tests/kernel/test_db.py::TestMigrationRobustness`——6 个独立进程并发 init、
+"版本落后 + 列已存在"残局自愈、迁移失败不推进版本号。
+
 ## 9. 失败语义总表（第三方按此分流处置）
 
 | 情形 | 内部行为 | 门面异常 |
