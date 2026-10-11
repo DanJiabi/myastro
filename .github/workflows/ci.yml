@@ -61,7 +61,7 @@ jobs:
         run: python -m build
       - name: Check metadata
         run: twine check dist/*
-      - name: Runtime smoke (network): ztf-lc then ztf-meta
+      - name: Runtime smoke (network) — ztf-lc then ztf-meta
         run: |
           # 段错误只在真实取数序列里出现（见 core.write_parquet 文档）：
           # 全新数据根下连续两次 fetch，第二次的 pyarrow 工作曾 100% 崩。

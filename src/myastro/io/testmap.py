@@ -46,6 +46,7 @@ CAPABILITIES: dict[str, str] = {
     "process.lc": "时序处理工具：归一化、折叠、周期搜索、凌星搜索",
     "present.tui": "TUI 行为：面板、键位、身份寻址、格式化",
     "present.cli": "CLI 行为：子命令参数接线、输出与退出码",
+    "ci.config": "CI 工作流配置（可解析性/结构）",
     "manage.doctor": "环境自检：依赖/路径可写/账本/文件系统/索引/平台",
     "manage.backup": "账本备份与恢复：在线备份、默认拒绝覆盖、安全副本",
     "facade.api": "门面契约：错误分类、参数校验、执行器隐身",

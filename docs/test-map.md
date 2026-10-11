@@ -4,7 +4,7 @@
 
 能力 id 定义在 `src/myastro/io/testmap.py`；能力说明与成熟度见 [capabilities.md](capabilities.md)。
 
-共 23 项能力、1354 个测试。
+共 24 项能力、1370 个测试。
 
 | 能力 | 说明 | 测试数 |
 |---|---|---|
@@ -27,6 +27,7 @@
 | `process.lc` | 时序处理工具：归一化、折叠、周期搜索、凌星搜索 | 18 |
 | `present.tui` | TUI 行为：面板、键位、身份寻址、格式化 | 749 |
 | `present.cli` | CLI 行为：子命令参数接线、输出与退出码 | 27 |
+| `ci.config` | CI 工作流配置（可解析性/结构） | 16 |
 | `manage.doctor` | 环境自检：依赖/路径可写/账本/文件系统/索引/平台 | 15 |
 | `manage.backup` | 账本备份与恢复：在线备份、默认拒绝覆盖、安全副本 | 23 |
 | `facade.api` | 门面契约：错误分类、参数校验、执行器隐身 | 3 |
@@ -1186,6 +1187,25 @@
 - `tests/cli/test_cli.py::TestSourceCheckoutOnlyCommands::test_test_map_outside_checkout`
 - `tests/cli/test_cli.py::TestVersion::test_version_flag`
 - `tests/cli/test_cli.py::TestVersion::test_version_is_single_sourced`
+
+### `ci.config` — CI 工作流配置（可解析性/结构）
+
+- `tests/guards/test_workflows_parse.py::test_workflow_dir_is_not_empty`
+- `tests/guards/test_workflows_parse.py::test_workflow_dir_is_not_empty`
+- `tests/guards/test_workflows_parse.py::test_workflow_dir_is_not_empty`
+- `tests/guards/test_workflows_parse.py::test_workflow_dir_is_not_empty`
+- `tests/guards/test_workflows_parse.py::test_workflow_dir_is_not_empty`
+- `tests/guards/test_workflows_parse.py::test_workflow_dir_is_not_empty`
+- `tests/guards/test_workflows_parse.py::test_workflow_dir_is_not_empty`
+- `tests/guards/test_workflows_parse.py::test_workflow_dir_is_not_empty`
+- `tests/guards/test_workflows_parse.py::test_workflow_is_parseable_and_well_formed`
+- `tests/guards/test_workflows_parse.py::test_workflow_is_parseable_and_well_formed`
+- `tests/guards/test_workflows_parse.py::test_workflow_is_parseable_and_well_formed`
+- `tests/guards/test_workflows_parse.py::test_workflow_is_parseable_and_well_formed`
+- `tests/guards/test_workflows_parse.py::test_workflow_is_parseable_and_well_formed`
+- `tests/guards/test_workflows_parse.py::test_workflow_is_parseable_and_well_formed`
+- `tests/guards/test_workflows_parse.py::test_workflow_is_parseable_and_well_formed`
+- `tests/guards/test_workflows_parse.py::test_workflow_is_parseable_and_well_formed`
 
 ### `manage.doctor` — 环境自检：依赖/路径可写/账本/文件系统/索引/平台
 

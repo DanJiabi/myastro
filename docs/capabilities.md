@@ -28,6 +28,7 @@
 | 源注册表（schema 化描述符） | L3 | 10 源；SOURCES/URL_SOURCES/TASKS/INDEXES 四表互指有守卫 | <!-- cap:source.registry -->
 | 源健康监测 | L3 | `ma.health()` 端点探测 + 落库 + info 面板新鲜覆盖；实测发现 unwise 已恢复 |。**探测深度=所填 URL**：只探域名根会漏报（unwise 根 200 而 `/cutout_fits` 因参数错返 500）——凡能给出合法最小请求的源都应填该请求 <!-- cap:source.health -->
 | 源接入指南 | L1 | 隐含在代码模式里；缺"接一个新源要动哪几处"的 checklist | <!-- cap:source.contract -->
+| CI 配置守卫 | 已加 | 工作流 YAML 必须可解析且结构完整（每个 job 有 runs-on/steps）——实测一个步骤名里的冒号就让整个 ci.yml 启动失败，而本地全绿无感 | <!-- cap:ci.config -->
 | 休眠源处置 | 决策已定（2026-10-11 明确：**保留现状**） | asassn（后端失联）保留实现+测试防腐烂，恢复日做真实验证；弃用则代码/测试/注册表一并删。**复查触发条件**：① `extras.yml` 每周探测到 v2 端点恢复可达（会自动红并提示做真实验证）；② 上游发布新版 `pyasassn`（解除 pyarrow 钉子）→ 把 `asassn` 移入必须通过的 extras 矩阵；③ 决定迁移到新版 API（0.4.0 之后再评估，其优先级低于插件契约）。**实测补充（2026-10）**：① v2 端点 `asassn-lb01.ifa.hawaii.edu:9006` 拒连（`health asassn` 报 unreachable）；② `pyasassn` 0.6.4 钉死 `pyarrow==4.0.1`，Python 3.12+ 装不上，只能用 `pip install --no-deps pyasassn`；③ 连接失败已收敛为一句可执行提示（不再抛原始 urllib3 栈） | <!-- cap:source.dormant -->
 | 凭据管理 | L1 | IRSA 账号手动配 ~/.ztfquery；无统一凭据层 |
 
