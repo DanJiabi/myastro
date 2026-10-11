@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import io as _io
 
-from ..core import atomic_write, retry
+from ..core import retry, write_parquet
 from ..jobs import FetchResult, JobSpec, fetch
 
 _LC_URL = "https://irsa.ipac.caltech.edu/cgi-bin/ZTF/nph_light_curves"
@@ -42,7 +42,7 @@ def _fn(ctx) -> FetchResult:
     if df is None or not len(df):
         return FetchResult(paths=[], dataset_id=-1,
                            meta={**meta, "empty": True})
-    atomic_write(dest, lambda f: df.to_parquet(f, index=False))
+    write_parquet(df, dest)
     return FetchResult(paths=[dest], dataset_id=-1,
                        meta={**meta, "empty": False})
 

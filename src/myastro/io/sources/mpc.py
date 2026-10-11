@@ -1,7 +1,7 @@
 """MPC 星历（astroquery.mpc，JPL Horizons 的可达替代）。"""
 from __future__ import annotations
 
-from ..core import atomic_write, retry
+from ..core import retry, write_parquet
 from ..jobs import FetchResult, JobSpec, fetch
 
 
@@ -24,7 +24,7 @@ def _fn(ctx) -> FetchResult:
                              p.get("step_days") or 1.0)
     name = p["target"].replace(" ", "_")
     dest = ctx.dest_dir / f"eph_{name}.parquet"
-    atomic_write(dest, lambda f: df.to_parquet(f, index=False))
+    write_parquet(df, dest)
     return FetchResult(paths=[dest], dataset_id=-1, meta=meta)
 
 

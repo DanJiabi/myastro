@@ -5,7 +5,7 @@
 """
 from __future__ import annotations
 
-from ..core import atomic_write, retry
+from ..core import retry, write_parquet
 from ..jobs import FetchResult, JobSpec, fetch
 
 IBE_SEARCH = "https://irsa.ipac.caltech.edu/ibe/search/ztf/products/sci"
@@ -60,7 +60,7 @@ def _meta_fn(ctx) -> FetchResult:
     dest = (ctx.dest_dir /
             f"meta_f{p['field']:06d}_{p['filtercode']}_c{p['ccdid']:02d}"
             f"_q{p['qid']}_jd{p['jd_min']:.0f}-{p['jd_max']:.0f}.parquet")
-    atomic_write(dest, lambda f: df.to_parquet(f, index=False))
+    write_parquet(df, dest)
     return FetchResult(paths=[dest], dataset_id=-1, meta=meta)
 
 

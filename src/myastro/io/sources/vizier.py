@@ -1,7 +1,7 @@
 """VizieR 星表锥检（任意发表星表按天区切片）。"""
 from __future__ import annotations
 
-from ..core import atomic_write, retry
+from ..core import retry, write_parquet
 from ..jobs import FetchResult, JobSpec, fetch
 
 
@@ -34,7 +34,7 @@ def _fn(ctx) -> FetchResult:
             f"{p['ra']:.4f}_{p['dec']:+.4f}_r{p['radius_deg']}.parquet")
     empty = df is None
     if not empty:
-        atomic_write(dest, lambda f: df.to_parquet(f, index=False))
+        write_parquet(df, dest)
     return FetchResult(paths=[] if empty else [dest], dataset_id=-1,
                        meta={**meta, "empty": empty})
 

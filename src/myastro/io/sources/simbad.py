@@ -1,7 +1,7 @@
 """SIMBAD 锥形检索（目标认证：坐标→天体名单）。"""
 from __future__ import annotations
 
-from ..core import atomic_write, retry
+from ..core import retry, write_parquet
 from ..jobs import FetchResult, JobSpec, fetch
 
 
@@ -29,7 +29,7 @@ def _fn(ctx) -> FetchResult:
     if df is None:
         df_empty = True
     else:
-        atomic_write(dest, lambda f: df.to_parquet(f, index=False))
+        write_parquet(df, dest)
         df_empty = False
     return FetchResult(paths=[] if df_empty else [dest],
                        dataset_id=-1, meta={**meta, "empty": df_empty})

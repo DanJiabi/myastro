@@ -3,6 +3,46 @@
 本文件记录对使用者有影响的变更。格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [0.3.5] - 2026-10-11
+
+### 修复
+
+- **真实取数序列的段错误（SIGSEGV）**：全新数据根下连续
+  `myastro fetch ztf-lc …` → `myastro fetch ztf-meta …`，第二个作业在**工作线程**里
+  构造 arrow 数组时崩溃（本机实测 10/10 次复现，退出码 139）。
+  **触发条件**：pyarrow 的工作发生在**非主线程**里——同序列在调用线程里执行不崩
+  （直接调用源函数 0/3、作业同步执行 0/5）。
+  **处置**：阻塞式 `fetch` 不再用工作线程，改为在调用线程里执行作业
+  （`runner.submit(sync=True)`；`submit` 的异步语义保留给 TUI/批量）。
+  修后同一序列 **0/10 崩**、浸泡工具 3/3 通过。
+  **如实标注**：① 根因在上游（pyarrow 25.0.0 / pandas 2.3.3 / numpy 2.5.3，
+  崩溃率随时序波动，测试中见过 0%–100% 的区间），我们做的是**规避**而非修复；
+  ② 逐列构造 arrow 数组、把 pyarrow 线程池钉为 1（两种摆放位置）都**无效**，
+  后者已从代码里撤掉（无效的规避手段留在代码里只会变成负担）；
+  ③ **残留风险**：TUI/`submit` 路径仍在工作线程里跑作业，未验证；
+  ④ pyarrow 26 的对照实验因本机链路无法下载 wheel 而**未完成**。
+
+### 新增
+
+- `scripts/soak_write.py`：在**子进程**里反复跑真实取数序列并统计崩溃率
+  （段错误会直接杀掉 pytest 进程，只能在子进程里观测）；区分"崩溃"（信号）
+  与"普通失败"（网络/服务），避免 CI 因 IRSA 可用性而红。
+- CI 的 build 任务新增该序列的网络冒烟（2 轮）——这是唯一能自动抓住此类崩溃的门。
+
+### 改进
+
+- `core.write_parquet`：逐列用纯 Python 值构造 arrow 数组并显式给类型。
+  顺带修好一个真问题——**空表的 dtype 退化**（ibe 检索无命中是常态，
+  `pa.array([], from_pandas=True)` 会得到 null 类型，读回来整列就废了），
+  并让混合 object 列不再抛 `ArrowTypeError`（统一转字符串）。
+
+### 测试
+
+- `tests/unit/test_parquet_writer.py`（8 条）：数值/字符串/布尔/时间往返、缺失语义、
+  坏 UTF-8 不抛错、**空表 schema 保住 double/int64/string**、混合 object 转字符串、
+  不写索引、不留 `.tmp`、6 线程并发写不互相干扰，以及**守卫**"必须绕开 pandas 的
+  `__arrow_array__` 转换路径"（变异验证：改回 `Table.from_pandas` → 测试立刻红）。
+
 ## [0.3.4] - 2026-10-11
 
 ### 修复
@@ -191,3 +231,4 @@
 [0.3.2]: https://github.com/DanJiabi/myastro/releases/tag/v0.3.2
 [0.3.3]: https://github.com/DanJiabi/myastro/releases/tag/v0.3.3
 [0.3.4]: https://github.com/DanJiabi/myastro/releases/tag/v0.3.4
+[0.3.5]: https://github.com/DanJiabi/myastro/releases/tag/v0.3.5

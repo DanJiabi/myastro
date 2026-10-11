@@ -4,7 +4,7 @@
 
 能力 id 定义在 `src/myastro/io/testmap.py`；能力说明与成熟度见 [capabilities.md](capabilities.md)。
 
-共 23 项能力、1346 个测试。
+共 23 项能力、1354 个测试。
 
 | 能力 | 说明 | 测试数 |
 |---|---|---|
@@ -19,7 +19,7 @@
 | `acquire.cancel` | 取消与作业记录删除（资产保留） | 3 |
 | `acquire.manifest` | 清单（YAML）批量获取 | 2 |
 | `acquire.schedule` | 定时任务（launchd 代理的生成与装卸） | 4 |
-| `manage.ledger` | 账本：schema/迁移、缓存身份、meta 溯源、原子写 | 35 |
+| `manage.ledger` | 账本：schema/迁移、缓存身份、meta 溯源、原子写 | 43 |
 | `manage.integrity` | 完整性巡检：sha 基线、损坏与缺失检测 | 11 |
 | `manage.search` | 本地检索（目标/坐标/时间） | 31 |
 | `manage.coverage` | 索引覆盖率统计 | 6 |
@@ -299,6 +299,14 @@
 - `tests/unit/test_core.py::TestCacheKey::test_different_params_differ`
 - `tests/unit/test_core.py::TestCacheKey::test_different_sources_differ`
 - `tests/unit/test_core.py::TestCacheKey::test_float_jitter_stable`
+- `tests/unit/test_parquet_writer.py::TestWriteParquet::test_broken_utf8_does_not_raise`
+- `tests/unit/test_parquet_writer.py::TestWriteParquet::test_concurrent_writes_do_not_interfere`
+- `tests/unit/test_parquet_writer.py::TestWriteParquet::test_does_not_use_pandas_arrow_conversion`
+- `tests/unit/test_parquet_writer.py::TestWriteParquet::test_empty_frame_keeps_dtypes`
+- `tests/unit/test_parquet_writer.py::TestWriteParquet::test_index_is_not_written`
+- `tests/unit/test_parquet_writer.py::TestWriteParquet::test_mixed_object_column_becomes_string`
+- `tests/unit/test_parquet_writer.py::TestWriteParquet::test_no_temp_file_left_behind`
+- `tests/unit/test_parquet_writer.py::TestWriteParquet::test_round_trip_values_and_dtypes`
 
 ### `manage.integrity` — 完整性巡检：sha 基线、损坏与缺失检测
 

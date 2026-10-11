@@ -1,7 +1,7 @@
 """Gaia DR3 锥形检索（ADQL → parquet，python 执行器）。"""
 from __future__ import annotations
 
-from ..core import atomic_write, retry
+from ..core import retry, write_parquet
 from ..jobs import FetchResult, JobSpec, fetch
 
 _DEFAULT_COLS = ("source_id", "ra", "dec", "parallax", "parallax_error",
@@ -29,7 +29,7 @@ def _fn(ctx) -> FetchResult:
                               p.get("columns"))
     dest = (ctx.dest_dir /
             f"cone_{p['ra']:.4f}_{p['dec']:+.4f}_r{p['radius_deg']}.parquet")
-    atomic_write(dest, lambda f: df.to_parquet(f, index=False))
+    write_parquet(df, dest)
     return FetchResult(paths=[dest], dataset_id=-1, meta=meta)
 
 

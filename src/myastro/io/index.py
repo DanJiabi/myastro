@@ -12,6 +12,7 @@ from pathlib import Path
 import pandas as pd
 
 from .config import Config
+from .core import write_parquet
 
 
 def _parse_survey_bricks(src: Path) -> pd.DataFrame:
@@ -109,7 +110,7 @@ def _sorted_keys(name: str) -> list[str]:
 
 def _save(name: str, df: pd.DataFrame) -> Path:
     out = index_path(name)
-    df.to_parquet(out, index=False)
+    write_parquet(df, out)
     _CACHE.pop(name, None)                   # 立刻失效，下次读新文件
     _KEYS.pop(name, None)
     return out

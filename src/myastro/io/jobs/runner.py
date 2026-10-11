@@ -83,7 +83,7 @@ def _dest_dir(spec: JobSpec) -> Path:
     return d
 
 def submit(spec: JobSpec, db: DB | None = None,
-           batch_id: str | None = None) -> int:
+           batch_id: str | None = None, sync: bool = False) -> int:
     """提交作业（不做缓存短路——见 fetch）。返回 job_id。"""
     own = db is None
     db = db or DB().init()
@@ -100,8 +100,14 @@ def submit(spec: JobSpec, db: DB | None = None,
         if spec.executor == "python":
             if spec.fn is None and spec.task is None:
                 raise ValueError("python 执行器需要 fn 或 task")
-            threading.Thread(target=_run_job, daemon=True,
-                             args=(db.path, job_id, spec, key)).start()
+            if sync:
+                # 阻塞式调用（facade/CLI/notebook）在**调用线程**里跑作业：
+                # 非主线程里做 pyarrow 工作会段错误（见 core.write_parquet 文档），
+                # 实测本路径 10/10 崩 → 0/5。异步语义仍保留给 submit（TUI/批量）。
+                _run_job(db.path, job_id, spec, key)
+            else:
+                threading.Thread(target=_run_job, daemon=True,
+                                 args=(db.path, job_id, spec, key)).start()
         elif spec.executor == "aria2":
             if not spec.url or not spec.dest:
                 raise ValueError("aria2 执行器需要 url 与 dest")
@@ -153,7 +159,7 @@ def fetch(spec: JobSpec, db: DB | None = None, **wait_kw) -> FetchResult:
         hit = _lookup_cached(db, cache_key(spec.source, spec.params))
         if hit is not None:
             return hit
-        job_id = submit(spec, db=db)
+        job_id = submit(spec, db=db, sync=True)   # 见 submit：阻塞式调用不用工作线程
         return wait(job_id, db=db, **wait_kw)
     finally:
         if own:

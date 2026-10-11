@@ -11,7 +11,7 @@ DNS NXDOMAIN（8.8.8.8/1.1.1.1 均查无，上游 master 分支仍指向该地�
 """
 from __future__ import annotations
 
-from ..core import atomic_write, retry
+from ..core import retry, write_parquet
 from ..jobs import FetchResult, JobSpec, fetch
 
 
@@ -58,7 +58,7 @@ def _fn(ctx) -> FetchResult:
     df, meta = _download_asassn(p["ra"], p["dec"], p["radius_arcmin"])
     dest = (ctx.dest_dir /
             f"lc_{p['ra']:.4f}_{p['dec']:+.4f}.parquet")
-    atomic_write(dest, lambda f: df.to_parquet(f, index=False))
+    write_parquet(df, dest)
     return FetchResult(paths=[dest], dataset_id=-1, meta=meta)
 
 

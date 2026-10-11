@@ -4,7 +4,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from ..core import atomic_write, retry
+from ..core import retry, write_parquet
 from ..jobs import FetchResult, JobSpec, fetch
 
 _CADENCE_EXP = {"2m": 120, "20s": 20, "10m": 600, "30m": 1800}
@@ -74,7 +74,7 @@ def _fn(ctx) -> FetchResult:
     name = _slug(ctx.params["target"])
     dest = ctx.dest_dir / name / f"lc_s{meta['sector']}_{ctx.params['cadence']}.parquet"
     dest.parent.mkdir(parents=True, exist_ok=True)
-    atomic_write(dest, lambda p: df.to_parquet(p, index=False))
+    write_parquet(df, dest)
     return FetchResult(paths=[dest], dataset_id=-1, meta=meta)
 
 
