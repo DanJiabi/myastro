@@ -230,6 +230,34 @@ def _check_indexes() -> list[Check]:
     return out
 
 
+def _check_aria2() -> list[Check]:
+    """aria2 是**可选**的系统依赖：只有批量下载（legacy / ztf / manifest）需要它，
+    其余源走 python 执行器。因此缺失只报警告，不让 doctor 判失败。"""
+    from . import aria2
+
+    state = aria2.diagnose()
+    out: list[Check] = []
+    if state["binary"] is None:
+        out.append(Check(
+            "aria2（可选）", WARN,
+            "未安装：legacy / ztf 帧 / manifest 批量下载不可用（其余源不受影响）",
+            f"安装：{state['install_hint']}"))
+    else:
+        out.append(Check("aria2（可选）", OK, f"{state['binary']}"))
+    if state["daemon"] and state["auth_ok"]:
+        out.append(Check("aria2 守护进程", OK,
+                         f"RPC 在线（127.0.0.1:{state['port']}）"))
+    elif state["daemon"] and state["auth_ok"] is False:
+        out.append(Check(
+            "aria2 守护进程", WARN,
+            f"在运行但密钥不匹配（本机期望 {state['secret']!r}）",
+            f"用 --rpc-secret={state['secret']} 重启 daemon，"
+            f"或设 MYASTRO_ARIA2_SECRET 与你的 daemon 一致"))
+    elif state["binary"] is not None:
+        out.append(Check("aria2 守护进程", OK, "未运行——首次使用时自动拉起"))
+    return out
+
+
 def _check_platform() -> list[Check]:
     out = [Check("平台", OK, f"{platform.system()} {platform.release()} / "
                              f"Python {platform.python_version()}")]
@@ -264,6 +292,7 @@ def run(cfg=None, *, sample: int = 200) -> list[Check]:
     # 分组用**稳定标签**（而非函数名）：单项检查崩了也要能报出"是哪一组坏了"，
     # 且测试打桩后标签不变。
     plan = (("依赖", _check_deps, {}),
+            ("aria2", _check_aria2, {}),
             ("路径", _check_paths, {"cfg": cfg}),
             ("账本", _check_ledger, {"cfg": cfg, "sample": sample}),
             ("索引", _check_indexes, {}),

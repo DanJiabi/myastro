@@ -70,10 +70,32 @@ pip uninstall myastro      # 只删代码——数据根与账本不受影响
 myastro backup --out ~/myastro-backup
 ```
 
+## 可选依赖：aria2（批量下载）
+
+只有三件事需要它——Legacy 砖块、ZTF 科学帧、YAML 清单。TESS、Gaia、ZTF 元数据/光变、
+MPC、SIMBAD、VizieR、unWISE 都是纯 Python，不需要它。
+
+```bash
+brew install aria2          # macOS
+sudo apt install aria2      # Debian/Ubuntu
+```
+
+通常**不需要你自己启动守护进程**：myastro 会在首次使用时自行拉起
+`aria2c --enable-rpc`（脱离终端）并持续复用。配置项：
+
+| 环境变量 | 默认 | 含义 |
+|---|---|---|
+| `MYASTRO_ARIA2_SECRET` | `myastro-legacy` | RPC 密钥；必须与你 daemon 的 `--rpc-secret` 一致 |
+| `MYASTRO_ARIA2_PORT` | `6800` | RPC 端口 |
+
+若你想自己起 daemon，`myastro doctor` 的 aria2 一行会打印出它期望的完整命令
+（含密钥）。
+
 ## 故障排查
 
 | 现象 | 原因 / 处理 |
 |---|---|
+| 提示 aria2 未安装，但你只用 TESS/Gaia 等 | 无影响——这些源不需要它；需要 Legacy/ZTF 帧时再装。 |
 | `doctor` 报"账本文件系统: nfs" | 账本在网络盘上。把 `MYASTRO_DB` 移到本地磁盘。 |
 | `doctor` 报缺少可选依赖 | 装对应 extra，例如 `pip install "myastro[ztfquery]"`。 |
 | 获取在重试后仍失败 | 巡天端点在维护或不可达——用 `myastro health` 查看。 |

@@ -281,6 +281,20 @@ ztf-lc 的公开 API 不需要凭据。匿名配额是否够用**未实测**，�
 守卫：`tests/kernel/test_db.py::TestMigrationRobustness`——6 个独立进程并发 init、
 "版本落后 + 列已存在"残局自愈、迁移失败不推进版本号。
 
+## 8.7 外部依赖 aria2（可选，0.3.3 起显式检查）
+
+只有**批量下载**需要它：Legacy 砖块、ZTF 科学帧、YAML 清单。其余源走 python
+执行器，不依赖任何系统二进制。
+
+- **不需要用户手动起守护进程**：首次用到时 `ensure_daemon` 自行拉起
+  `aria2c --enable-rpc`（detached），配置由 `daemon_command()` 生成
+  （doctor 提示与文档共用同一份，避免写歪）。
+- **配置**：`MYASTRO_ARIA2_SECRET`（默认 `myastro-legacy`）、
+  `MYASTRO_ARIA2_PORT`（默认 6800）。默认值保持向后兼容；但这意味着**本机任何进程
+  知道默认密钥即可通过 RPC 控制你的 aria2**，因此建议设成自己的值。
+- **失败语义**：缺二进制 → 立刻 `RuntimeError`（跨平台安装提示，不白等）；
+  密钥不匹配 → 明确说"密钥不匹配 + 期望值"而不是"离线"；启动超时 → 打印手动启动命令。
+
 ## 9. 失败语义总表（第三方按此分流处置）
 
 | 情形 | 内部行为 | 门面异常 |

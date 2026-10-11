@@ -1,6 +1,6 @@
 [project]
 name = "myastro"
-version = "0.3.2"
+version = "0.3.3"
 description = "Personal astronomy data toolkit: fetch, ledger, dedup, coverage, TUI"
 readme = "README.md"
 license = "MIT"

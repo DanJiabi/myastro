@@ -21,7 +21,7 @@ def _detect_version() -> str:
     """版本单一来源：以 pyproject.toml 为唯一手写处。
 
     已安装时读包元数据（importlib.metadata）；直接从源码树运行时元数据可能缺失，
-    回退到 "0.3.2+source"，避免出现第二个手写版本号（此前 pyproject 0.1.0 与
+    回退到 "0.3.3+source"，避免出现第二个手写版本号（此前 pyproject 0.1.0 与
     这里 0.2.0 已经漂移过）。
     """
     from importlib.metadata import PackageNotFoundError, version
@@ -29,7 +29,7 @@ def _detect_version() -> str:
     try:
         return version("myastro")
     except PackageNotFoundError:                    # 源码直跑（未安装）
-        return "0.3.2+source"
+        return "0.3.3+source"
 
 
 __version__ = _detect_version()

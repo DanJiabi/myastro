@@ -3,6 +3,31 @@
 本文件记录对使用者有影响的变更。格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [0.3.3] - 2026-10-11
+
+### 新增
+
+- **aria2 依赖的显式检查与指引**（可选系统依赖，只有 Legacy / ZTF 帧 / manifest
+  清单需要它）：`myastro doctor` 新增两项——二进制是否存在（缺失时给出
+  macOS/Linux 各自的安装命令，并说明"其余源不受影响"）、守护进程状态
+  （在线 / 未运行但首次使用会自动拉起 / **在运行但密钥不匹配**）。
+- **`MYASTRO_ARIA2_SECRET` / `MYASTRO_ARIA2_PORT`**：RPC 密钥与端口可配置。
+  此前密钥是源码里的硬编码常量（`myastro-legacy`）——任何本机进程只要知道这个
+  字符串就能通过 6800 端口控制你的 aria2（往数据目录塞下载）。默认值保持不变，
+  老用户无需改动。
+- 文档（中英 README 与 `docs/{en,zh}/install.md`）新增"可选依赖 aria2"小节，
+  含安装命令、自动拉起说明与配置表。
+
+### 修复
+
+- **缺少 aria2 时不再白等 10 秒**：旧实现先盲等（20×0.5s）再报一句
+  `brew install aria2`（Linux 用户照做不了）。现在先查二进制，缺了立刻报错并给出
+  跨平台安装命令。
+- **密钥不匹配不再被误报成"离线"**：`ping()` 只有 True/False，用户会按"没启动"去
+  排查。现在诊断会区分「没装 / 没起 / 密钥不匹配」，并给出期望的密钥值。
+- 测试副作用修复：`ensure_daemon` 的失败路径测试改为替换 `Popen`/`sleep`——
+  早期版本会真的尝试拉起 aria2c（本机端口被占才没造成影响），且每个用例白等 10 秒。
+
 ## [0.3.2] - 2026-10-11
 
 ### 修复
@@ -111,3 +136,4 @@
 [0.2.0]: https://github.com/DanJiabi/myastro/releases/tag/v0.2.0
 [0.3.1]: https://github.com/DanJiabi/myastro/releases/tag/v0.3.1
 [0.3.2]: https://github.com/DanJiabi/myastro/releases/tag/v0.3.2
+[0.3.3]: https://github.com/DanJiabi/myastro/releases/tag/v0.3.3

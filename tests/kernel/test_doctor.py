@@ -104,3 +104,43 @@ def test_optional_dep_hint_uses_real_extra_name(env, monkeypatch):
     assert "[asassn]" in checks["可选 pyasassn"].fix
     assert "[ztfquery]" in checks["可选 ztfquery"].fix
     assert "pyasassn]" not in checks["可选 pyasassn"].fix
+
+
+@pytest.mark.cap("manage.doctor")
+class TestAria2Checks:
+    """aria2 是可选系统依赖：缺失只报警告（用它的只有 legacy/ztf/manifest）。"""
+
+    def _state(self, monkeypatch, **over):
+        base = {"binary": None, "daemon": False, "auth_ok": None,
+                "secret": "myastro-legacy", "port": 6800,
+                "install_hint": "macOS: brew install aria2 | Debian/Ubuntu: sudo apt install aria2"}
+        base.update(over)
+        monkeypatch.setattr("myastro.io.aria2.diagnose", lambda root=None: base)
+        return {c.name: c for c in doctor._check_aria2()}
+
+    def test_missing_binary_is_warning_not_failure(self, monkeypatch):
+        checks = self._state(monkeypatch)
+        c = checks["aria2（可选）"]
+        assert c.status == doctor.WARN
+        assert "批量下载" in c.detail and "其余源不受影响" in c.detail
+        assert "apt install aria2" in c.fix
+
+    def test_binary_present_daemon_down_is_ok(self, monkeypatch):
+        """装了但没起不是问题：首次使用会自动拉起。"""
+        checks = self._state(monkeypatch, binary="/usr/bin/aria2c")
+        assert checks["aria2（可选）"].status == doctor.OK
+        assert checks["aria2 守护进程"].status == doctor.OK
+        assert "自动拉起" in checks["aria2 守护进程"].detail
+
+    def test_daemon_running_is_ok(self, monkeypatch):
+        checks = self._state(monkeypatch, binary="/usr/bin/aria2c",
+                             daemon=True, auth_ok=True)
+        assert checks["aria2 守护进程"].status == doctor.OK
+        assert "RPC 在线" in checks["aria2 守护进程"].detail
+
+    def test_wrong_secret_is_called_out(self, monkeypatch):
+        checks = self._state(monkeypatch, binary="/usr/bin/aria2c",
+                             daemon=True, auth_ok=False)
+        c = checks["aria2 守护进程"]
+        assert c.status == doctor.WARN and "密钥不匹配" in c.detail
+        assert "MYASTRO_ARIA2_SECRET" in c.fix

@@ -37,6 +37,19 @@ myastro doctor                           # self-check: deps, paths, ledger, file
 Python ≥ 3.11. macOS and Linux are supported; Windows is untested (scheduling is
 macOS/Linux only). Optional extras: `[processing]`, `[asassn]`, `[ztfquery]`.
 
+**Optional system dependency — `aria2`** (bulk downloads only: Legacy bricks, ZTF
+frames, YAML manifests; the other eight sources are pure Python):
+
+```bash
+brew install aria2          # macOS
+sudo apt install aria2      # Debian/Ubuntu   (dnf / pacman on Fedora / Arch)
+```
+
+You do not have to start the daemon: on first use myastro launches `aria2c --enable-rpc`
+itself. It authenticates with `MYASTRO_ARIA2_SECRET` (default `myastro-legacy`, port
+`MYASTRO_ARIA2_PORT`, default 6800) — set the variable if you run your own daemon with a
+different secret. `myastro doctor` reports all of this.
+
 ## Quick start
 
 ```python

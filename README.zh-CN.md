@@ -37,6 +37,19 @@ myastro doctor                           # 自检：依赖、路径、账本、�
 需要 Python ≥ 3.11；支持 macOS 与 Linux（Windows 未测试，定时任务仅 macOS/Linux）。
 可选 extras：`[processing]`、`[asassn]`、`[ztfquery]`。
 
+**可选系统依赖 —— `aria2`**（只影响批量下载：Legacy 砖块、ZTF 帧、YAML 清单；
+其余八个源是纯 Python）：
+
+```bash
+brew install aria2          # macOS
+sudo apt install aria2      # Debian/Ubuntu（Fedora/Arch 用 dnf / pacman）
+```
+
+**不需要手动启动守护进程**：首次使用时 myastro 会自己拉起 `aria2c --enable-rpc`。
+它用 `MYASTRO_ARIA2_SECRET` 认证（默认 `myastro-legacy`，端口 `MYASTRO_ARIA2_PORT`
+默认 6800）——如果你自己起的 daemon 用了别的密钥，设这个变量即可。
+`myastro doctor` 会把这几项都列出来。
+
 ## 快速上手
 
 ```python

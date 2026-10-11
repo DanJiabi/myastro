@@ -4,7 +4,7 @@
 
 能力 id 定义在 `src/myastro/io/testmap.py`；能力说明与成熟度见 [capabilities.md](capabilities.md)。
 
-共 23 项能力、1307 个测试。
+共 23 项能力、1320 个测试。
 
 | 能力 | 说明 | 测试数 |
 |---|---|---|
@@ -12,7 +12,7 @@
 | `source.contract` | 单源实现契约：参数校验、落盘、入库、空结果 | 58 |
 | `source.health` | 源健康探测与状态覆盖（ok/degraded/unreachable） | 18 |
 | `source.dormant` | 休眠源防腐烂（asassn：后端失联期间保持正确） | 2 |
-| `acquire.fetch` | 单件获取：缓存短路、原子落盘、入库、aria2 对账 | 21 |
+| `acquire.fetch` | 单件获取：缓存短路、原子落盘、入库、aria2 对账 | 29 |
 | `acquire.query` | 计划型查询：解析出 URL/文件名但不提交 | 1 |
 | `acquire.batch` | 批量下单与批次资格（构不出 spec 的源不得入选） | 7 |
 | `acquire.retry` | 重试：僵尸判定、跨进程重提、task 推断、强制重下 | 22 |
@@ -27,7 +27,7 @@
 | `process.lc` | 时序处理工具：归一化、折叠、周期搜索、凌星搜索 | 18 |
 | `present.tui` | TUI 行为：面板、键位、身份寻址、格式化 | 731 |
 | `present.cli` | CLI 行为：子命令参数接线、输出与退出码 | 27 |
-| `manage.doctor` | 环境自检：依赖/路径可写/账本/文件系统/索引/平台 | 15 |
+| `manage.doctor` | 环境自检：依赖/路径可写/账本/文件系统/索引/平台 | 20 |
 | `manage.backup` | 账本备份与恢复：在线备份、默认拒绝覆盖、安全副本 | 23 |
 | `facade.api` | 门面契约：错误分类、参数校验、执行器隐身 | 3 |
 | `design.guards` | 设计守卫：文档同步、边界规则、能力覆盖 | 217 |
@@ -170,6 +170,14 @@
 ### `acquire.fetch` — 单件获取：缓存短路、原子落盘、入库、aria2 对账
 
 - `tests/facade/test_facade.py::TestFacadeErrorTaxonomy::test_network_error`
+- `tests/kernel/test_aria2_config.py::TestConfig::test_daemon_command_matches_runtime_config`
+- `tests/kernel/test_aria2_config.py::TestConfig::test_defaults_preserve_backward_compatibility`
+- `tests/kernel/test_aria2_config.py::TestConfig::test_secret_and_port_are_runtime_configurable`
+- `tests/kernel/test_aria2_config.py::TestFailFast::no_side_effects`
+- `tests/kernel/test_aria2_config.py::TestFailFast::test_diagnose_distinguishes_not_running_from_wrong_secret`
+- `tests/kernel/test_aria2_config.py::TestFailFast::test_missing_binary_fails_immediately_with_cross_platform_hint`
+- `tests/kernel/test_aria2_config.py::TestFailFast::test_starts_daemon_when_binary_present`
+- `tests/kernel/test_aria2_config.py::TestFailFast::test_wrong_secret_is_reported_as_such`
 - `tests/kernel/test_jobs.py::TestAria2Validation::test_aria2_requires_url_dest`
 - `tests/kernel/test_jobs.py::TestHappyPath::test_deleted_file_invalidates_cache`
 - `tests/kernel/test_jobs.py::TestHappyPath::test_fetch_registers_dataset_and_files`
@@ -1143,6 +1151,11 @@
 ### `manage.doctor` — 环境自检：依赖/路径可写/账本/文件系统/索引/平台
 
 - `tests/facade/test_facade.py::TestDoctorAndBackupContract::test_doctor_returns_checks`
+- `tests/kernel/test_doctor.py::TestAria2Checks::_state`
+- `tests/kernel/test_doctor.py::TestAria2Checks::test_binary_present_daemon_down_is_ok`
+- `tests/kernel/test_doctor.py::TestAria2Checks::test_daemon_running_is_ok`
+- `tests/kernel/test_doctor.py::TestAria2Checks::test_missing_binary_is_warning_not_failure`
+- `tests/kernel/test_doctor.py::TestAria2Checks::test_wrong_secret_is_called_out`
 - `tests/kernel/test_doctor.py::TestDoctorChecks::test_fresh_env_has_no_failures`
 - `tests/kernel/test_doctor.py::TestDoctorChecks::test_json_serializable`
 - `tests/kernel/test_doctor.py::TestDoctorChecks::test_local_filesystem_is_ok`
