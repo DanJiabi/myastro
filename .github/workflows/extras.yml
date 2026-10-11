@@ -29,6 +29,26 @@ jobs:
           /tmp/v/bin/pip install -q --upgrade pip
           /tmp/v/bin/pip install ".[${{ matrix.extra }}]"
           /tmp/v/bin/python -c "import myastro; print('myastro', myastro.__version__)"
+  asassn-upstream-watch:
+    # "保留现状"不能变成"没人再看"。每周探一次 v2 端点：
+    # 只要它恢复可达，这个 job 就红——提醒按 docs/capabilities.md 的规则做真实验证，
+    # 而不是让休眠源悄悄躺着。服务仍下线时它是绿的（不产生噪音）。
+    runs-on: ubuntu-latest
+    steps:
+      - name: ASAS-SN Sky Patrol v2 endpoint must still be down
+        run: |
+          set +e
+          curl -s -o /dev/null -m 20 "http://asassn-lb01.ifa.hawaii.edu:9006/get_schema"
+          code=$?
+          set -e
+          if [ "$code" -eq 0 ]; then
+            echo "::error::ASAS-SN v2 端点已恢复可达 —— 请做真实验证：" \
+                 "① myastro fetch asassn 真取一次 ② 更新 capabilities.md 状态 " \
+                 "③ 把 asassn 移入必须通过的 extras 矩阵"
+            exit 1
+          fi
+          echo "v2 端点仍不可达（curl 退出码 $code），符合预期：保留实现、不动它。"
+
   asassn-known-broken:
     # 已知上游问题：pyasassn 0.6.4 钉死 pyarrow==4.0.1（无 3.12+ 轮子）→ extra 装不上；
     # 且 v2 服务端点已下线。这里持续观测，**装上了就说明上游修好了**，届时可改为必须通过。
