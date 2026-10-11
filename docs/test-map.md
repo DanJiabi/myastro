@@ -4,7 +4,7 @@
 
 能力 id 定义在 `src/myastro/io/testmap.py`；能力说明与成熟度见 [capabilities.md](capabilities.md)。
 
-共 23 项能力、1320 个测试。
+共 23 项能力、1327 个测试。
 
 | 能力 | 说明 | 测试数 |
 |---|---|---|
@@ -19,7 +19,7 @@
 | `acquire.cancel` | 取消与作业记录删除（资产保留） | 3 |
 | `acquire.manifest` | 清单（YAML）批量获取 | 2 |
 | `acquire.schedule` | 定时任务（launchd 代理的生成与装卸） | 4 |
-| `manage.ledger` | 账本：schema/迁移、缓存身份、meta 溯源、原子写 | 28 |
+| `manage.ledger` | 账本：schema/迁移、缓存身份、meta 溯源、原子写 | 35 |
 | `manage.integrity` | 完整性巡检：sha 基线、损坏与缺失检测 | 11 |
 | `manage.search` | 本地检索（目标/坐标/时间） | 31 |
 | `manage.coverage` | 索引覆盖率统计 | 6 |
@@ -277,6 +277,13 @@
 - `tests/kernel/test_db.py::TestMigrationRobustness::test_concurrent_init_is_safe`
 - `tests/kernel/test_db.py::TestMigrationRobustness::test_failed_migration_does_not_advance_version`
 - `tests/kernel/test_db.py::TestMigrationRobustness::test_heals_stale_version_when_columns_exist`
+- `tests/kernel/test_db.py::test_init_survives_concurrent_wal_change`
+- `tests/kernel/test_db.py::test_init_survives_concurrent_wal_change`
+- `tests/kernel/test_db.py::test_init_survives_concurrent_wal_change`
+- `tests/kernel/test_db.py::test_init_survives_concurrent_wal_change`
+- `tests/kernel/test_db.py::test_init_survives_concurrent_wal_change`
+- `tests/kernel/test_db.py::test_init_survives_concurrent_wal_change`
+- `tests/kernel/test_db.py::test_init_survives_concurrent_wal_change`
 - `tests/kernel/test_jobs.py::TestMetaPersisted::test_cache_hit_returns_meta`
 - `tests/kernel/test_jobs.py::TestMetaPersisted::test_empty_meta_does_not_clobber`
 - `tests/kernel/test_path_containment.py::TestDataRootContainment::test_escape_rejected_and_nothing_written`

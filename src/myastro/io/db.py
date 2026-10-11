@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import re
 import sqlite3
+import time
 from pathlib import Path
 from typing import Self
 
@@ -50,6 +51,10 @@ _MIGRATIONS: dict[int, tuple[str, ...]] = {
 }
 
 
+# WAL 开启的重试预算：journal_mode 变更不走 busy handler，只能自己重试。
+WAL_ENABLE_RETRIES = 60          # × 50ms ≈ 最多等 3s
+WAL_ENABLE_BACKOFF = 0.05
+
 # ADD COLUMN 语句（用于幂等判断：并发或中断后可能"列已存在但版本号落后"）
 _ADD_COLUMN_RE = re.compile(r"^\s*ALTER\s+TABLE\s+(\w+)\s+ADD\s+COLUMN\s+(\w+)",
                             re.IGNORECASE)
@@ -72,12 +77,36 @@ class DB:
 
     def init(self) -> DB:
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.conn = sqlite3.connect(self.path)
+        self.conn = sqlite3.connect(self.path, timeout=30)
         self.conn.row_factory = sqlite3.Row
-        self.conn.execute("PRAGMA journal_mode=WAL")
+        self.conn.execute("PRAGMA busy_timeout=30000")     # 先立规矩，再做别的
+        self._enable_wal()
         self.conn.execute("PRAGMA foreign_keys=ON")
         self._migrate()
         return self
+
+    def _enable_wal(self) -> None:
+        """开启 WAL（设置写入库头后持久生效）：**先查再改**，改动失败则短重试。
+
+        为什么不能只写一句 `PRAGMA journal_mode=WAL`：journal_mode 变更**不经过
+        busy handler**——实测另一个连接持锁时，即使 `timeout=5s` 也立刻抛
+        `database is locked`。并发打开同一个新库时必然有一个进程撞上它：
+        CI（ubuntu）三个矩阵项正是这样红的，而 macOS 本地 18/18 全过，
+        因为两个平台的加锁时序不同。
+        正常情况下库已是 wal，"查"就命中，根本不会走到改动分支。
+        """
+        assert self.conn is not None
+        for attempt in range(WAL_ENABLE_RETRIES):
+            mode = self.conn.execute("PRAGMA journal_mode").fetchone()[0]
+            if str(mode).lower() == "wal":
+                return
+            try:
+                self.conn.execute("PRAGMA journal_mode=WAL")
+                return
+            except sqlite3.OperationalError:
+                if attempt == WAL_ENABLE_RETRIES - 1:
+                    raise
+                time.sleep(WAL_ENABLE_BACKOFF)
 
     def _migrate(self) -> None:
         """应用迁移：**并发安全 + 幂等**，可自愈"半迁移"状态。

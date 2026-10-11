@@ -65,9 +65,32 @@ echo "▶ 打标签 ${VERSION}（指向公开快照）并推送"
 git tag -f -a "$VERSION" -m "$VERSION" "$COMMIT"
 git push -f "$REMOTE" "refs/tags/$VERSION"
 echo "✓ 公开仓已更新：https://github.com/$SLUG"
+
+# 推完必须看 CI：0.3.2 那次 CI 在 ubuntu 上失败，因为"推完没看"被漏掉了。
+if command -v gh >/dev/null 2>&1 && [[ "$MODE" != "--no-wait" ]]; then
+    echo "▶ 等待该提交的 CI（最多 12 分钟；--no-wait 可跳过）"
+    SHA_LOCAL="$(git rev-parse "$COMMIT")"
+    for _ in $(seq 1 72); do
+        read -r STATUS CONCLUSION <<<"$(gh run list --workflow=ci.yml --limit 20 \
+            --json headSha,status,conclusion \
+            --jq "[.[] | select(.headSha == \"$SHA_LOCAL\")][0] | \"\(.status) \(.conclusion)\"" 2>/dev/null)"
+        case "$STATUS" in
+            completed)
+                echo "  CI: $CONCLUSION"
+                [[ "$CONCLUSION" == "success" ]] || {
+                    echo "  ✗ CI 未通过——先修，再谈发布：gh run list --workflow=ci.yml" >&2
+                    exit 1
+                }
+                break ;;
+            "") sleep 10 ;;
+            *) sleep 10 ;;
+        esac
+    done
+fi
 cat <<'NOTE'
 注意：本地标签 $VERSION 现在指向**公开快照提交**（不是私有 main 的提交）。
 若要让私有仓的标签指向 main 的开发提交（推荐，便于 git describe）：
   git tag -f -a $VERSION -m "$VERSION" main && git push origin refs/tags/$VERSION
 两个仓的同名标签指向不同提交对象但树相同——快照模型的必然结果，见 docs/release.md。
 NOTE
+

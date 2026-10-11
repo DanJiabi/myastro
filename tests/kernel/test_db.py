@@ -289,3 +289,36 @@ class TestMigrationRobustness:
             assert conn.execute("PRAGMA user_version").fetchone()[0] < 99
         finally:
             conn.close()
+
+
+@pytest.mark.cap("manage.ledger")
+def test_init_survives_concurrent_wal_change(tmp_path):
+    """另一连接持写锁时，init 仍须成功。
+
+    `PRAGMA journal_mode=WAL` 的变更**不经过 busy handler**：实测即便
+    `timeout=5s` 也立刻抛 `database is locked`。并发打开同一个新库时必然有一个
+    进程撞上（CI ubuntu 三个矩阵项就是这样红的，macOS 本地却 18/18 全过——
+    两个平台加锁时序不同），所以必须先查再改 + 短重试。
+    """
+    import sqlite3
+    import threading
+    import time
+
+    path = tmp_path / "wal.db"
+    holder = sqlite3.connect(path, check_same_thread=False)
+    holder.execute("CREATE TABLE t(x)")
+    holder.execute("BEGIN IMMEDIATE")
+    holder.execute("INSERT INTO t VALUES (1)")
+
+    def release():
+        time.sleep(0.5)
+        holder.rollback()
+        holder.close()
+
+    threading.Thread(target=release, daemon=True).start()
+    db = DB(path).init()                     # 旧实现在这里立刻 database is locked
+    try:
+        assert db.conn.execute("PRAGMA journal_mode").fetchone()[0].lower() == "wal"
+        assert db.conn.execute("PRAGMA busy_timeout").fetchone()[0] >= 10000
+    finally:
+        db.close()

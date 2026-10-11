@@ -278,8 +278,16 @@ ztf-lc 的公开 API 不需要凭据。匿名配额是否够用**未实测**，�
 `myastro init & myastro doctor` 并行后，此后每个命令都报
 `duplicate column name: dataset_id`，且没有恢复路径（0.3.2 起自动修好）。
 
+**第四个坑（CI 在 ubuntu 上抓到，macOS 本地全过）：`PRAGMA journal_mode=WAL` 的变更
+不经过 busy handler。** 即使 `timeout=5s`，另一个连接持写锁时也立刻抛
+`database is locked`。并发打开同一个新库必然有一个进程撞上，因此开启 WAL 必须
+**先查再改 + 短重试**（库已是 wal 时"查"就命中，不改动），并把 `busy_timeout` 放在
+连接建立后的第一件事。
+**教训**：并发问题不能只在一个平台上验证——同一份代码在 macOS 上 18/18 通过、
+在 ubuntu 上三个矩阵项全红，差别只是加锁时序。
+
 守卫：`tests/kernel/test_db.py::TestMigrationRobustness`——6 个独立进程并发 init、
-"版本落后 + 列已存在"残局自愈、迁移失败不推进版本号。
+"版本落后 + 列已存在"残局自愈、迁移失败不推进版本号、**持锁期间 init 仍成功**。
 
 ## 8.7 外部依赖 aria2（可选，0.3.3 起显式检查）
 

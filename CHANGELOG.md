@@ -20,6 +20,16 @@
 
 ### 修复
 
+- **并发打开同一个新库会 `database is locked`**：`PRAGMA journal_mode=WAL` 的
+  变更**不经过 busy handler**——实测即使 `timeout=5s` 也立刻抛
+  `sqlite3.OperationalError: database is locked`。并发 `init` 时必然有一个进程撞上。
+  改为**先查再改 + 短重试**（正常情况下库已是 wal，"查"就命中、根本不改动），
+  并把 `busy_timeout` 提到连接建立后的第一件事。
+  这是 CI 抓到的：**ubuntu 三个矩阵项全红，而 macOS 本地 18/18 全过**（两个平台
+  加锁时序不同）——0.3.2 的"并发已修复"结论在 Linux 上并不成立。
+- **发布流程漏洞**：0.3.2 的 CI 在 ubuntu 上失败却没人发现，因为我推完快照没看 CI。
+  `scripts/publish_public.sh` 现在推完会**等待该提交的 CI 并报告结论**，
+  失败则以非零码退出（`--no-wait` 可跳过）。
 - **缺少 aria2 时不再白等 10 秒**：旧实现先盲等（20×0.5s）再报一句
   `brew install aria2`（Linux 用户照做不了）。现在先查二进制，缺了立刻报错并给出
   跨平台安装命令。
