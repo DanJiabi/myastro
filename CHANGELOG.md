@@ -3,6 +3,17 @@
 本文件记录对使用者有影响的变更。格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [0.3.1] - 2026-10-10
+
+### 修复
+
+- 抑制 lightkurve 导入期的一条无害提示（`tpfmodel submodule is not available
+  without oktopus`）。它出现在**每个新用户的第一个命令**（`myastro doctor`）与首次
+  TESS 取数输出里，而该子模块（TPF 像素建模）myastro 从不使用。
+  抑制按**消息精确匹配**（`core.quiet_warnings`），其它警告照常暴露；
+  测试同时断言"别的警告不会被吞掉"。未选择安装 oktopus：它停留在 2018 年（0.1.2）
+  且依赖 autograd，为消一条提示引入它风险更大。
+
 ## [0.3.0] - 2026-10-10
 
 **首个公开发布**（0.2.0 为私有基线，未发布）。PyPI 上的起点。
@@ -78,3 +89,4 @@
 - 采用 MIT 许可。
 
 [0.2.0]: https://github.com/DanJiabi/myastro/releases/tag/v0.2.0
+[0.3.1]: https://github.com/DanJiabi/myastro/releases/tag/v0.3.1

@@ -101,7 +101,10 @@ def _check_deps() -> list[Check]:
     out = []
     for mod, dist, minimum in CORE_DEPS:
         try:
-            importlib.import_module(mod)
+            from .core import quiet_warnings
+            # 与 tess 源同一原因：lightkurve 的 oktopus 提示不该出现在依赖自检里
+            with quiet_warnings(r".*tpfmodel submodule is not available.*"):
+                importlib.import_module(mod)
             ver = md.version(dist)
         except Exception as e:                       # noqa: BLE001
             out.append(Check(f"依赖 {dist}", FAIL,

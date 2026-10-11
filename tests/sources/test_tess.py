@@ -66,3 +66,29 @@ class TestTess:
         monkeypatch.setattr(tess, "_download_lc", fail_download)
         r2 = tess.tess_lightcurve("WASP-12", sector=20)
         assert r2.cache_hit is True and not calls
+
+
+@pytest.mark.cap("source.contract")
+def test_lightkurve_import_suppresses_oktopus_noise(env):
+    """lightkurve 的 oktopus 提示不该出现在我们的导入路径上。
+
+    它出现在每个新用户的第一个命令（`myastro doctor`）与首次 TESS 取数里，
+    而 tpfmodel 我们从不使用。抑制是**按消息精确匹配**的（见 core.quiet_warnings），
+    所以这里同时断言：其它警告不受影响。
+    """
+    import sys
+    import warnings
+
+    for name in [m for m in sys.modules if m.startswith("lightkurve")]:
+        del sys.modules[name]                     # 强制重新触发导入期警告
+
+    from myastro.io.sources.tess import _import_lightkurve
+
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        _import_lightkurve()
+        warnings.warn("其它警告应当照常暴露", UserWarning)
+
+    messages = [str(w.message) for w in caught]
+    assert not [m for m in messages if "tpfmodel" in m], messages
+    assert [m for m in messages if "应当照常暴露" in m], "抑制不能变成全局静音"

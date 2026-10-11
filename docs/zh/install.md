@@ -77,4 +77,5 @@ myastro backup --out ~/myastro-backup
 | `doctor` 报"账本文件系统: nfs" | 账本在网络盘上。把 `MYASTRO_DB` 移到本地磁盘。 |
 | `doctor` 报缺少可选依赖 | 装对应 extra，例如 `pip install "myastro[ztfquery]"`。 |
 | 获取在重试后仍失败 | 巡天端点在维护或不可达——用 `myastro health` 查看。 |
+| 看到关于 lightkurve `tpfmodel`/`oktopus` 的警告 | 上游对可选子模块的提示，myastro 从不使用该子模块，可忽略（myastro 自身的导入路径已抑制它）。 |
 | `myastro test-map` / `doc-sync` 退出码 2 | 这两个命令只用于源码仓库，安装版不可用。 |

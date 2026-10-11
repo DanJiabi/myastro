@@ -15,10 +15,27 @@ def _slug(name: str) -> str:
     return re.sub(r"[^\w.-]+", "_", name).strip("_") or "unnamed"
 
 
+# lightkurve 在 import 时会检查可选依赖 oktopus（TPF 像素建模 tpfmodel 用），
+# 没装就打一条 UserWarning。我们从不使用 tpfmodel，这条提示对新用户只是噪音
+# （它出现在 `myastro doctor` 与首次 TESS 取数的输出里），故按消息精确抑制；
+# 安装 oktopus 不是选项：它停留在 2018 年（0.1.2）且需要 autograd。
+LIGHTKURVE_OKTOPUS_NOISE = r".*tpfmodel submodule is not available.*"
+
+
+def _import_lightkurve():
+    """导入 lightkurve（抑制上述已知无害提示）。抽成函数便于测试。"""
+    from ..core import quiet_warnings
+
+    with quiet_warnings(LIGHTKURVE_OKTOPUS_NOISE):
+        import lightkurve as lk
+
+    return lk
+
+
 def _download_lc(target: str, sector: int | None, cadence: str,
                  cache_dir: Path):
     """网络层：lightkurve 检索 + 下载（带重试）。返回 (df, meta)。"""
-    import lightkurve as lk
+    lk = _import_lightkurve()
 
     result = lk.search_lightcurve(target, mission="TESS", cadence=cadence)
     if len(result) == 0:

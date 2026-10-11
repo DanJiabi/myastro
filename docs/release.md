@@ -119,7 +119,7 @@ docs/test-map.md     生成物（保持中文，属于开发者文档）
 | 阶段 | 内容 | 发布门 |
 |---|---|---|
 | **0.2.0**（私有基线，不上 PyPI） | 冻结当前工作 ✅；版本单一来源 + `--version` ✅；LICENSE/CHANGELOG ✅；`doctor`/`init`/`backup`+`restore` ✅；`constraints.txt` ✅；sdist 内容明确化 ✅；**默认路径平台化 ⏳**（改默认数据根会影响你当前工作流，需先设置 `MYASTRO_DATA`，留到 0.3.0 与迁移提示一起做） | 全量测试绿 ✅ + `twine check` 过 ✅ + 干净 venv 装 wheel 后 `doctor` 过（待打 tag 前复跑） |
-| **0.3.0**（首个公开） | 英文/中文 README ✅ + 双语用户文档 ✅ + CI 三工作流 ✅ + 社区文件 ✅ + 脱敏 ✅ + 默认数据根平台化 ✅ + notebook 清空输出 ✅；**待办**：GitHub 建仓与首推、TestPyPI 演练、PyPI 项目与 Trusted Publisher 配置（需你操作） | CI 三平台绿 + TestPyPI 可装 + 无个人标识 |
+| **0.3.0**（首个公开） | **已完成并发布**：GitHub 建仓（快照模型 B）+ 双语文档 + CI 三工作流 + 社区文件 + 脱敏 + 默认数据根平台化 + notebook 清空输出 + PyPI Trusted Publishing | ✅ 全部达成：CI 8/8 绿、PyPI 可装（`pip install myastro` → 0.3.0）、GitHub Release 已建、无个人标识 |
 | **0.4–0.9** | 插件式源注册、双语文档站、Linux 调度后端、notebooks 示例、覆盖率 | 每版：CI 绿 + CHANGELOG |
 | **1.0** | API 冻结、弃用政策生效、文档补齐 | 公开 API 无未决破坏性变更 |
 
@@ -132,6 +132,53 @@ docs/test-map.md     生成物（保持中文，属于开发者文档）
 **标签约定**：同名标签在两个仓指向**不同的提交对象、相同的树**——
 私有仓的 `vX.Y.Z` 指向 main 的开发提交（便于 `git describe`），
 公开仓的 `vX.Y.Z` 指向快照提交。发布脚本会在结束时提示如何把私有仓的标签指回 main。
+
+## 10.2 发布下一版的操作清单（已跑通一次，照做即可）
+
+前提：私有仓改动已提交并通过本地门（`pytest` + `ruff` + `pyflakes`）。
+
+```bash
+# 1) 升版本（单一来源：pyproject 唯一手写处）
+#    改 pyproject.toml 的 version，并在 CHANGELOG.md 顶部加一段
+pip install -e .                       # 刷新可编辑安装的元数据，否则 --version 仍是旧值
+myastro --version                      # 应为新版本
+# 2) 门 + 生成物
+myastro test-map && myastro doc-sync
+pytest -q && ruff check src tests && pyflakes src tests
+git add -A && git commit -m "release: X.Y.Z" && git push
+# 3) 公开快照（自动推 GitHub main 并更新标签，触发 Release 工作流）
+scripts/publish_public.sh vX.Y.Z
+# 4) 私有仓标签指回 main（脚本会提示）
+git tag -f -a vX.Y.Z -m "X.Y.Z" main && git push origin refs/tags/vX.Y.Z
+# 5) 发布后核对
+gh run list --workflow=release.yml --limit 1
+python -c "import json,urllib.request;print(json.load(urllib.request.urlopen('https://pypi.org/pypi/myastro/json'))['info']['version'])"
+gh release create vX.Y.Z --title "myastro X.Y.Z" --notes-file /tmp/release_notes.md
+```
+
+已知坑：
+- **国内镜像（清华等）同步有延迟**：刚发布的版本在镜像上会 `No matching distribution`，
+  用 `pip install -i https://pypi.org/simple myastro` 或等镜像同步。
+- GitHub 仓库变量 `PYPI_READY=true` 已设置；环境 `pypi` 已加 **required reviewer
+  （DanJiabi）+ 部署策略只允许 `v*` 标签**。因此标签推送后：build 自动跑，
+  `publish` 会**停在等待审批**（Actions → 该次运行 → Review deployments → Approve）。
+  命令行为等价于：
+  ```bash
+  gh api repos/DanJiabi/myastro/environments/pypi          # 查看保护规则
+  gh api --method POST repos/DanJiabi/myastro/actions/runs/<run_id>/pending_deployments \
+      -F "environment_ids[]=<id>" -F "state=approved" -f "comment=ok"
+  ```
+  TestPyPI 环境刻意不加审批：演练是手动触发的，加了只会拖慢。
+- TestPyPI 演练需要**单独的账号**与 pending publisher（workflow `testpypi.yml`、
+  environment `testpypi`）。**已配置并跑通**（0.3.0）：
+  - 触发：`gh workflow run testpypi.yml`
+  - 验证要点：TestPyPI 与 PyPI 会有同名同版本，用 **sha256 比对**才能确认来源——
+    从 TestPyPI 下载的 wheel 摘要必须等于 TestPyPI JSON API 公布的摘要。
+  - 安装验证需带依赖索引：`pip install -i https://test.pypi.org/simple/
+    --extra-index-url https://pypi.org/simple myastro`（TestPyPI 不托管依赖）。
+  - TestPyPI **不允许重复文件名**：同一版本只能演练一次，下次演练需新版本号。
+  - 实测：0.3.0 的 wheel 与 sdist 在 PyPI 与 TestPyPI 上 **sha256 完全相同**
+    （两次独立构建字节一致），说明当前 hatchling 构建是可复现的。
 
 ## 11. 0.2.0 冻结计划（已完成，保留作记录）
 

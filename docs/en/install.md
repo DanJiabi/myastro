@@ -79,4 +79,5 @@ myastro backup --out ~/myastro-backup
 | `doctor` reports "账本文件系统: nfs" | The ledger is on a network filesystem. Move `MYASTRO_DB` to a local disk. |
 | `doctor` reports a missing optional dependency | Install the matching extra, e.g. `pip install "myastro[ztfquery]"`. |
 | Fetch fails with a network error after retries | The survey endpoint is down or unreachable — check `myastro health`. |
+| A `UserWarning` about lightkurve's `tpfmodel`/`oktopus` | Upstream notice about an optional lightkurve submodule myastro never uses. Ignore it (myastro suppresses it on its own import paths). |
 | `myastro test-map` / `doc-sync` exit with code 2 | They only work inside a source checkout, not from an installed wheel. |

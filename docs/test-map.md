@@ -4,12 +4,12 @@
 
 能力 id 定义在 `src/myastro/io/testmap.py`；能力说明与成熟度见 [capabilities.md](capabilities.md)。
 
-共 23 项能力、1292 个测试。
+共 23 项能力、1298 个测试。
 
 | 能力 | 说明 | 测试数 |
 |---|---|---|
 | `source.registry` | 源注册表与描述符：接入声明、示例参数、漂移守卫 | 43 |
-| `source.contract` | 单源实现契约：参数校验、落盘、入库、空结果 | 52 |
+| `source.contract` | 单源实现契约：参数校验、落盘、入库、空结果 | 58 |
 | `source.health` | 源健康探测与状态覆盖（ok/degraded/unreachable） | 18 |
 | `source.dormant` | 休眠源防腐烂（asassn：后端失联期间保持正确） | 2 |
 | `acquire.fetch` | 单件获取：缓存短路、原子落盘、入库、aria2 对账 | 21 |
@@ -104,6 +104,12 @@
 - `tests/sources/test_tess.py::TestTess::test_fn_produces_parquet_and_registers`
 - `tests/sources/test_tess.py::TestTess::test_invalid_cadence_rejected`
 - `tests/sources/test_tess.py::TestTess::test_slug`
+- `tests/sources/test_tess.py::test_lightkurve_import_suppresses_oktopus_noise`
+- `tests/sources/test_tess.py::test_lightkurve_import_suppresses_oktopus_noise`
+- `tests/sources/test_tess.py::test_lightkurve_import_suppresses_oktopus_noise`
+- `tests/sources/test_tess.py::test_lightkurve_import_suppresses_oktopus_noise`
+- `tests/sources/test_tess.py::test_lightkurve_import_suppresses_oktopus_noise`
+- `tests/sources/test_tess.py::test_lightkurve_import_suppresses_oktopus_noise`
 - `tests/sources/test_unwise.py::TestCutoutUrl::test_band_is_integer_bitmask`
 - `tests/sources/test_unwise.py::TestCutoutUrl::test_merged_band_rejected`
 - `tests/sources/test_unwise.py::TestCutoutUrl::test_unknown_band_rejected`

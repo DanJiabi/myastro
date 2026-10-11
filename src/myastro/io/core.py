@@ -6,6 +6,7 @@ import json
 import os
 import time
 from collections.abc import Callable
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -35,6 +36,21 @@ def _normalize(obj: Any) -> Any:
     if isinstance(obj, float):
         return float(f"{obj:.6g}")
     return obj
+
+
+@contextmanager
+def quiet_warnings(*patterns: str):
+    """临时抑制匹配这些正则的警告（只用于第三方库导入期的已知无害提示）。
+
+    刻意**按消息精确匹配**而不是 `simplefilter("ignore")`：只挡我们判定过的那条，
+    第三方以后新增的其它警告照常暴露，不会被我们的代码吞掉。
+    """
+    import warnings
+
+    with warnings.catch_warnings():
+        for pattern in patterns:
+            warnings.filterwarnings("ignore", message=pattern)
+        yield
 
 
 def source_root(start: Path | None = None) -> Path:
