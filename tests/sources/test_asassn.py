@@ -31,3 +31,37 @@ class TestAsassn:
         r = asassn.asassn_lightcurve(339.2729, 58.4153)
         assert r.paths[0].suffix == ".parquet"
         assert r.cache_hit is False
+
+
+@pytest.mark.cap("source.contract")
+def test_service_unreachable_gives_concise_actionable_error(env, monkeypatch):
+    """服务不可达时给出可执行的说明，而不是几十行 urllib3 重试栈。
+
+    背景：pyasassn 的 SkyPatrolClient 构造函数就会请求服务端 schema，
+    因此"构造失败"等价于"服务不可达"。该服务 2026-10 实测拒连
+    （asassn-lb01.ifa.hawaii.edu:9006），`myastro health asassn` 也报 unreachable。
+    """
+    import sys
+    import types
+
+    fake = types.ModuleType("pyasassn.client")
+
+    class SkyPatrolClient:
+        def __init__(self, *a, **k):
+            raise ConnectionError(
+                "HTTPConnectionPool(host='asassn-lb01.ifa.hawaii.edu', port=9006): "
+                "Max retries exceeded ... (一堆 urllib3 细节)")
+
+    fake.SkyPatrolClient = SkyPatrolClient
+    pkg = types.ModuleType("pyasassn")
+    pkg.client = fake
+    monkeypatch.setitem(sys.modules, "pyasassn", pkg)
+    monkeypatch.setitem(sys.modules, "pyasassn.client", fake)
+
+    from myastro.io.sources.asassn import _download_asassn
+    with pytest.raises(ConnectionError) as e:
+        _download_asassn(270.0, -30.0, 1.0)
+    msg = str(e.value)
+    assert "ASAS-SN Sky Patrol v2 服务不可达" in msg
+    assert "myastro health asassn" in msg          # 给出下一步动作
+    assert "urllib3" not in msg                    # 不再把原始栈丢给用户

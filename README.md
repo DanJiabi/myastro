@@ -35,7 +35,15 @@ myastro doctor                           # self-check: deps, paths, ledger, file
 ```
 
 Python ≥ 3.11. macOS and Linux are supported; Windows is untested (scheduling is
-macOS/Linux only). Optional extras: `[processing]`, `[asassn]`, `[ztfquery]`.
+macOS/Linux only). Optional extras: `[processing]`, `[ztfquery]`, and `[asassn]`.
+
+> ⚠️ `[asassn]` currently **cannot be installed normally**: `pyasassn` 0.6.4 pins
+> `pyarrow==4.0.1` (2022), which has no wheels for Python ≥ 3.12, so pip tries to
+> build it from source and fails. Use `pip install --no-deps pyasassn` instead
+> (verified to work with a current pyarrow). The ASAS-SN Sky Patrol v2 endpoint is
+> also offline as of 2026-10 (`asassn-lb01.ifa.hawaii.edu:9006` refuses connections),
+> so that source is unusable until upstream recovers — `myastro health asassn` reports
+> the live status.
 
 **Optional system dependency — `aria2`** (bulk downloads only: Legacy bricks, ZTF
 frames, YAML manifests; the other eight sources are pure Python):

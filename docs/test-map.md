@@ -4,12 +4,12 @@
 
 能力 id 定义在 `src/myastro/io/testmap.py`；能力说明与成熟度见 [capabilities.md](capabilities.md)。
 
-共 23 项能力、1345 个测试。
+共 23 项能力、1346 个测试。
 
 | 能力 | 说明 | 测试数 |
 |---|---|---|
 | `source.registry` | 源注册表与描述符：接入声明、示例参数、漂移守卫 | 43 |
-| `source.contract` | 单源实现契约：参数校验、落盘、入库、空结果 | 58 |
+| `source.contract` | 单源实现契约：参数校验、落盘、入库、空结果 | 64 |
 | `source.health` | 源健康探测与状态覆盖（ok/degraded/unreachable） | 18 |
 | `source.dormant` | 休眠源防腐烂（asassn：后端失联期间保持正确） | 2 |
 | `acquire.fetch` | 单件获取：缓存短路、原子落盘、入库、aria2 对账 | 29 |
@@ -27,7 +27,7 @@
 | `process.lc` | 时序处理工具：归一化、折叠、周期搜索、凌星搜索 | 18 |
 | `present.tui` | TUI 行为：面板、键位、身份寻址、格式化 | 749 |
 | `present.cli` | CLI 行为：子命令参数接线、输出与退出码 | 27 |
-| `manage.doctor` | 环境自检：依赖/路径可写/账本/文件系统/索引/平台 | 20 |
+| `manage.doctor` | 环境自检：依赖/路径可写/账本/文件系统/索引/平台 | 15 |
 | `manage.backup` | 账本备份与恢复：在线备份、默认拒绝覆盖、安全副本 | 23 |
 | `facade.api` | 门面契约：错误分类、参数校验、执行器隐身 | 3 |
 | `design.guards` | 设计守卫：文档同步、边界规则、能力覆盖 | 217 |
@@ -82,6 +82,12 @@
 
 ### `source.contract` — 单源实现契约：参数校验、落盘、入库、空结果
 
+- `tests/sources/test_asassn.py::test_service_unreachable_gives_concise_actionable_error`
+- `tests/sources/test_asassn.py::test_service_unreachable_gives_concise_actionable_error`
+- `tests/sources/test_asassn.py::test_service_unreachable_gives_concise_actionable_error`
+- `tests/sources/test_asassn.py::test_service_unreachable_gives_concise_actionable_error`
+- `tests/sources/test_asassn.py::test_service_unreachable_gives_concise_actionable_error`
+- `tests/sources/test_asassn.py::test_service_unreachable_gives_concise_actionable_error`
 - `tests/sources/test_exoplanet.py::TestSolutionSelection::test_deterministic_across_orderings`
 - `tests/sources/test_exoplanet.py::TestSolutionSelection::test_fallback_to_period_only`
 - `tests/sources/test_exoplanet.py::TestSolutionSelection::test_most_precise_among_complete`
@@ -1176,11 +1182,6 @@
 ### `manage.doctor` — 环境自检：依赖/路径可写/账本/文件系统/索引/平台
 
 - `tests/facade/test_facade.py::TestDoctorAndBackupContract::test_doctor_returns_checks`
-- `tests/kernel/test_doctor.py::TestAria2Checks::_state`
-- `tests/kernel/test_doctor.py::TestAria2Checks::test_binary_present_daemon_down_is_ok`
-- `tests/kernel/test_doctor.py::TestAria2Checks::test_daemon_running_is_ok`
-- `tests/kernel/test_doctor.py::TestAria2Checks::test_missing_binary_is_warning_not_failure`
-- `tests/kernel/test_doctor.py::TestAria2Checks::test_wrong_secret_is_called_out`
 - `tests/kernel/test_doctor.py::TestDoctorChecks::test_fresh_env_has_no_failures`
 - `tests/kernel/test_doctor.py::TestDoctorChecks::test_json_serializable`
 - `tests/kernel/test_doctor.py::TestDoctorChecks::test_local_filesystem_is_ok`
@@ -1190,11 +1191,11 @@
 - `tests/kernel/test_doctor.py::TestDoctorChecks::test_schema_ahead_of_code_is_failure`
 - `tests/kernel/test_doctor.py::TestDoctorChecks::test_unwritable_data_root_is_failure`
 - `tests/kernel/test_doctor.py::TestDoctorChecks::test_version_tuple_comparison`
-- `tests/kernel/test_doctor.py::test_optional_dep_hint_uses_real_extra_name`
-- `tests/kernel/test_doctor.py::test_optional_dep_hint_uses_real_extra_name`
-- `tests/kernel/test_doctor.py::test_optional_dep_hint_uses_real_extra_name`
-- `tests/kernel/test_doctor.py::test_optional_dep_hint_uses_real_extra_name`
-- `tests/kernel/test_doctor.py::test_optional_dep_hint_uses_real_extra_name`
+- `tests/kernel/test_doctor.py::test_optional_dep_hint_is_actually_runnable`
+- `tests/kernel/test_doctor.py::test_optional_dep_hint_is_actually_runnable`
+- `tests/kernel/test_doctor.py::test_optional_dep_hint_is_actually_runnable`
+- `tests/kernel/test_doctor.py::test_optional_dep_hint_is_actually_runnable`
+- `tests/kernel/test_doctor.py::test_optional_dep_hint_is_actually_runnable`
 
 ### `manage.backup` — 账本备份与恢复：在线备份、默认拒绝覆盖、安全副本
 

@@ -95,6 +95,7 @@ sudo apt install aria2      # Debian/Ubuntu
 
 | 现象 | 原因 / 处理 |
 |---|---|
+| `pip install 'myastro[asassn]'` 在编译 pyarrow 时失败 | 上游钉子（`pyasassn` 要求 `pyarrow==4.0.1`，无 Python 3.12+ 轮子）。改用 `pip install --no-deps pyasassn`。另注意 ASAS-SN v2 服务本身已下线（见 `myastro health asassn`）。 |
 | 提示 aria2 未安装，但你只用 TESS/Gaia 等 | 无影响——这些源不需要它；需要 Legacy/ZTF 帧时再装。 |
 | `doctor` 报"账本文件系统: nfs" | 账本在网络盘上。把 `MYASTRO_DB` 移到本地磁盘。 |
 | `doctor` 报缺少可选依赖 | 装对应 extra，例如 `pip install "myastro[ztfquery]"`。 |

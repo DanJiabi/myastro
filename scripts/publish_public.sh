@@ -25,6 +25,21 @@ if [[ -n "$(git status --porcelain)" ]]; then
     exit 1
 fi
 
+# 国际链路会瞬时断（实测：connect github.com:443 超时 75s）——推送必须能重试，
+# 否则一次网络抖动就留下"快照提交建好了但没推上去"的半成品状态。
+push_retry() {
+    local attempt
+    for attempt in 1 2 3 4 5; do
+        if git push "$@"; then
+            return 0
+        fi
+        echo "  ⚠ 推送失败（第 $attempt 次），30s 后重试" >&2
+        sleep 30
+    done
+    echo "✗ 连续 5 次推送失败（网络问题），请稍后重跑本脚本；本地快照已建好" >&2
+    return 1
+}
+
 echo "▶ 快照：$(git rev-parse --short HEAD) → 公开分支 ${BRANCH}（标签 ${VERSION}）"
 TREE="$(git rev-parse 'HEAD^{tree}')"
 PARENT="$(git rev-parse --verify -q "refs/heads/$BRANCH" || true)"
@@ -57,13 +72,13 @@ if [[ "$MODE" == "--force" ]]; then
     # 仅用于公开仓重建/回滚：快照不是远端 main 的后代时必须显式要求强推。
     # 用 force-with-lease 而不是 --force：远端被别人改过就拒绝覆盖。
     echo "  （--force：force-with-lease 覆盖远端 main）"
-    git push --force-with-lease "$REMOTE" "$BRANCH:main"
+    push_retry --force-with-lease "$REMOTE" "$BRANCH:main"
 else
-    git push "$REMOTE" "$BRANCH:main"
+    push_retry "$REMOTE" "$BRANCH:main"
 fi
 echo "▶ 打标签 ${VERSION}（指向公开快照）并推送"
 git tag -f -a "$VERSION" -m "$VERSION" "$COMMIT"
-git push -f "$REMOTE" "refs/tags/$VERSION"
+push_retry -f "$REMOTE" "refs/tags/$VERSION"
 echo "✓ 公开仓已更新：https://github.com/$SLUG"
 
 # 推完必须看 CI：0.3.2 那次 CI 在 ubuntu 上失败，因为"推完没看"被漏掉了。

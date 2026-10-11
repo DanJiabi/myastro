@@ -1,0 +1,54 @@
+name: Extras installability
+
+# 为什么需要这道门：我们文档与 doctor 提示都在推荐安装命令，
+# 但没有人验证过它们真能装上。实测就因此踩了两次：
+#   ① 提示写成 `myastro[pyasassn]`（extra 实际叫 asassn）；
+#   ② `myastro[asassn]` 根本装不上（pyasassn 钉死 pyarrow==4.0.1，无 3.12+ 轮子）。
+# 这个工作流在干净环境里逐个装 extras，把这些"只会在用户机器上炸"的问题提前暴露。
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * 1"          # 每周一 03:00 UTC，上游变更也能被发现
+
+jobs:
+  extras:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+        extra: [ztfquery, processing]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install ${{ matrix.extra }} in a clean env
+        run: |
+          python -m venv /tmp/v
+          /tmp/v/bin/pip install -q --upgrade pip
+          /tmp/v/bin/pip install ".[${{ matrix.extra }}]"
+          /tmp/v/bin/python -c "import myastro; print('myastro', myastro.__version__)"
+  asassn-known-broken:
+    # 已知上游问题：pyasassn 0.6.4 钉死 pyarrow==4.0.1（无 3.12+ 轮子）→ extra 装不上；
+    # 且 v2 服务端点已下线。这里持续观测，**装上了就说明上游修好了**，届时可改为必须通过。
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Try the documented workaround (should succeed)
+        run: |
+          python -m venv /tmp/v
+          /tmp/v/bin/pip install -q --upgrade pip
+          /tmp/v/bin/pip install ".[test]"
+          /tmp/v/bin/pip install --no-deps pyasassn
+          /tmp/v/bin/python -c "import pyasassn; print('pyasassn importable with modern pyarrow')"
+      - name: Try the extra itself (known broken upstream)
+        run: |
+          python -m venv /tmp/v2
+          /tmp/v2/bin/pip install -q --upgrade pip
+          /tmp/v2/bin/pip install ".[asassn]"
+          echo "上游已修好 pyarrow 钉子 —— 请把 asassn 加入必须通过的矩阵"

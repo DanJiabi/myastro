@@ -98,6 +98,7 @@ If you prefer running the daemon yourself, `myastro doctor` prints the exact com
 
 | Symptom | Cause / fix |
 |---|---|
+| `pip install 'myastro[asassn]'` fails while building pyarrow | Upstream pin (`pyasassn` requires `pyarrow==4.0.1`, no wheels for Python ≥ 3.12). Use `pip install --no-deps pyasassn`. Note the ASAS-SN v2 service itself is offline (see `myastro health asassn`). |
 | `aria2` reported as missing but you only fetch TESS/Gaia/etc. | Harmless — those sources do not use it. Install it when you need Legacy/ZTF frames. |
 | `doctor` reports "账本文件系统: nfs" | The ledger is on a network filesystem. Move `MYASTRO_DB` to a local disk. |
 | `doctor` reports a missing optional dependency | Install the matching extra, e.g. `pip install "myastro[ztfquery]"`. |

@@ -35,7 +35,14 @@ myastro doctor                           # 自检：依赖、路径、账本、�
 ```
 
 需要 Python ≥ 3.11；支持 macOS 与 Linux（Windows 未测试，定时任务仅 macOS/Linux）。
-可选 extras：`[processing]`、`[asassn]`、`[ztfquery]`。
+可选 extras：`[processing]`、`[ztfquery]`、`[asassn]`。
+
+> ⚠️ `[asassn]` 目前**无法正常安装**：`pyasassn` 0.6.4 把 `pyarrow==4.0.1`（2022 年）
+> 精确钉死，而它没有 Python 3.12+ 的轮子，pip 会去源码编译并失败。
+> 改用 `pip install --no-deps pyasassn`（实测可与新版 pyarrow 共存）。
+> 另外 ASAS-SN Sky Patrol v2 端点自 2026-10 起拒连
+> （`asassn-lb01.ifa.hawaii.edu:9006`），该源在上游恢复前不可用；
+> 用 `myastro health asassn` 查看实时状态。
 
 **可选系统依赖 —— `aria2`**（只影响批量下载：Legacy 砖块、ZTF 帧、YAML 清单；
 其余八个源是纯 Python）：

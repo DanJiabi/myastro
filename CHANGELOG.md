@@ -3,6 +3,33 @@
 本文件记录对使用者有影响的变更。格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [0.3.4] - 2026-10-11
+
+### 修复
+
+- **`doctor` 又给出了一条装不上的安装命令**（用户实测）：`pip install 'myastro[asassn]'`
+  会在编译 `pyarrow` 时失败——`pyasassn` 0.6.4（2022-06）把 `pyarrow==4.0.1` **精确钉死**，
+  而它没有 Python 3.12+ 的轮子。改为 `pip install --no-deps pyasassn`（实测可与新版
+  pyarrow 共存），并加测试锁住"提示必须真能跑通"（这次连"extra 名错"和"extra 装不上"
+  两类都覆盖）。
+- **ASAS-SN 服务不可达时的报错可读性**：`pyasassn` 的客户端在**构造**时就会拉服务端
+  schema，失败时用户看到的是一大段 urllib3 重试栈。现在收敛为一句可执行的说明
+  （含 `myastro health asassn` 的指引）。
+
+### 文档
+
+- 中英 README 与 `docs/{en,zh}/install.md` 明确写出：`[asassn]` 目前**无法正常安装**
+  （上游钉子）与其替代命令；ASAS-SN Sky Patrol v2 端点自 2026-10 拒连
+  （`asassn-lb01.ifa.hawaii.edu:9006`），该源在上游恢复前不可用。
+- `docs/capabilities.md` 的"休眠源处置"补上三条实测结论。
+
+### 新增
+
+- **CI 工作流 `extras.yml`**（手动 + 每周一）：在干净环境里逐个安装我们推荐的 extras，
+  把"只会在用户机器上炸"的安装问题提前暴露；`asassn` 作为已知上游问题单独观测
+  （装上了就说明上游修好了，届时改为必须通过）。这类问题本该由我们先用 CI 发现，
+  而不是让用户撞上。
+
 ## [0.3.3] - 2026-10-11
 
 ### 新增
@@ -154,3 +181,4 @@
 [0.3.1]: https://github.com/DanJiabi/myastro/releases/tag/v0.3.1
 [0.3.2]: https://github.com/DanJiabi/myastro/releases/tag/v0.3.2
 [0.3.3]: https://github.com/DanJiabi/myastro/releases/tag/v0.3.3
+[0.3.4]: https://github.com/DanJiabi/myastro/releases/tag/v0.3.4

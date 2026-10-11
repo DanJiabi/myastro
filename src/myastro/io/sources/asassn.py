@@ -19,7 +19,17 @@ def _download_asassn(ra: float, dec: float, radius_arcmin: float):
     """网络层：SkyPatrolClient 锥搜 + 下载光变。返回 (df, meta)。"""
     from pyasassn.client import SkyPatrolClient
 
-    client = SkyPatrolClient(verbose=False)
+    # SkyPatrolClient 的构造函数就会去拉服务端 schema，因此**构造失败**即服务不可达。
+    # 直接把 urllib3 的原始异常抛出去，用户看到的是几十行重试栈却看不出结论；
+    # 这里收敛成一句可执行的说明（该服务 2026-10 实测拒连，health 也在探）。
+    try:
+        client = SkyPatrolClient(verbose=False)
+    except Exception as exc:
+        raise ConnectionError(
+            "ASAS-SN Sky Patrol v2 服务不可达"
+            "（asassn-lb01.ifa.hawaii.edu:9006 拒绝连接）：上游服务可能已迁移或下线。"
+            "用 `myastro health asassn` 查看当前状态；"
+            "该源在服务恢复前不可用。") from exc
 
     def _attempt():
         result = client.cone_search(ra, dec, radius_arcmin,

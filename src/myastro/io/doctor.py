@@ -35,8 +35,17 @@ CORE_DEPS: list[tuple[str, str, str | None]] = [
     ("textual", "textual", None),
     ("transitleastsquares", "transitleastsquares", "2.0"),
 ]
-# 发行名 → pyproject 里的 extra 名（提示命令必须能真的跑通）
-OPTIONAL_EXTRAS = {"pyasassn": "asassn", "ztfquery": "ztfquery"}
+# 发行名 → 安装提示命令。**提示必须真能跑通**（实测踩过两次）：
+# - extra 名写错：曾提示 `myastro[pyasassn]`，实际叫 `myastro[asassn]`；
+# - extra 本身装不上：pyasassn 0.6.4（2022-06）把 `pyarrow==4.0.1` 精确钉死，
+#   而 4.0.1 没有 Python 3.12+ 的轮子 → pip 去源码编译并失败（用户实测）。
+#   `--no-deps` 跳过它的钉子，用环境里已装的 pyarrow；实测 0.6.4 与新 pyarrow
+#   可以共存。上游修好前，这就是唯一可用的安装路径。
+OPTIONAL_FIX: dict[str, str] = {
+    "pyasassn": "pip install --no-deps pyasassn"
+                "   # 上游钉死 pyarrow==4.0.1（无 3.12+ 轮子），故不能用 extra",
+    "ztfquery": "pip install 'myastro[ztfquery]'",
+}
 
 OPTIONAL_DEPS: list[tuple[str, str, str]] = [
     ("pyasassn", "pyasassn", "asassn 源"),
@@ -125,9 +134,8 @@ def _check_deps() -> list[Check]:
             importlib.import_module(mod)
             out.append(Check(f"可选 {dist}", OK, f"{md.version(dist)}（{why}）"))
         except Exception:                            # noqa: BLE001
-            extra = OPTIONAL_EXTRAS.get(dist, dist)   # 发行名 ≠ extra 名（实测踩过）
             out.append(Check(f"可选 {dist}", WARN, f"未安装（{why} 不可用）",
-                             f"pip install 'myastro[{extra}]'"))
+                             OPTIONAL_FIX.get(dist, f"pip install 'myastro[{dist}]'")))
     return out
 
 
