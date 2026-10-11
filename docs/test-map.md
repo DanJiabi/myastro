@@ -4,7 +4,7 @@
 
 能力 id 定义在 `src/myastro/io/testmap.py`；能力说明与成熟度见 [capabilities.md](capabilities.md)。
 
-共 23 项能力、1327 个测试。
+共 23 项能力、1345 个测试。
 
 | 能力 | 说明 | 测试数 |
 |---|---|---|
@@ -25,7 +25,7 @@
 | `manage.coverage` | 索引覆盖率统计 | 6 |
 | `manage.index` | 索引构建与浏览（builder/url 两类来源） | 16 |
 | `process.lc` | 时序处理工具：归一化、折叠、周期搜索、凌星搜索 | 18 |
-| `present.tui` | TUI 行为：面板、键位、身份寻址、格式化 | 731 |
+| `present.tui` | TUI 行为：面板、键位、身份寻址、格式化 | 749 |
 | `present.cli` | CLI 行为：子命令参数接线、输出与退出码 | 27 |
 | `manage.doctor` | 环境自检：依赖/路径可写/账本/文件系统/索引/平台 | 20 |
 | `manage.backup` | 账本备份与恢复：在线备份、默认拒绝覆盖、安全副本 | 23 |
@@ -393,6 +393,20 @@
 
 ### `present.tui` — TUI 行为：面板、键位、身份寻址、格式化
 
+- `tests/ui/test_form_labels.py::test_concurrent_source_rebuild_does_not_double_render`
+- `tests/ui/test_form_labels.py::test_concurrent_source_rebuild_does_not_double_render`
+- `tests/ui/test_form_labels.py::test_concurrent_source_rebuild_does_not_double_render`
+- `tests/ui/test_form_labels.py::test_concurrent_source_rebuild_does_not_double_render`
+- `tests/ui/test_form_labels.py::test_concurrent_source_rebuild_does_not_double_render`
+- `tests/ui/test_form_labels.py::test_concurrent_source_rebuild_does_not_double_render`
+- `tests/ui/test_form_labels.py::test_concurrent_source_rebuild_does_not_double_render`
+- `tests/ui/test_form_labels.py::test_concurrent_source_rebuild_does_not_double_render`
+- `tests/ui/test_form_labels.py::test_concurrent_source_rebuild_does_not_double_render`
+- `tests/ui/test_form_labels.py::test_concurrent_source_rebuild_does_not_double_render`
+- `tests/ui/test_form_labels.py::test_concurrent_source_rebuild_does_not_double_render`
+- `tests/ui/test_form_labels.py::test_concurrent_source_rebuild_does_not_double_render`
+- `tests/ui/test_form_labels.py::test_concurrent_source_rebuild_does_not_double_render`
+- `tests/ui/test_form_labels.py::test_every_field_has_a_label`
 - `tests/ui/test_form_labels.py::test_every_field_has_a_label`
 - `tests/ui/test_form_labels.py::test_every_field_has_a_label`
 - `tests/ui/test_form_labels.py::test_every_field_has_a_label`
@@ -417,6 +431,8 @@
 - `tests/ui/test_form_labels.py::test_labels_survive_filled_values`
 - `tests/ui/test_form_labels.py::test_labels_survive_filled_values`
 - `tests/ui/test_form_labels.py::test_labels_survive_filled_values`
+- `tests/ui/test_form_labels.py::test_labels_survive_filled_values`
+- `tests/ui/test_form_labels.py::test_placeholder_holds_only_example`
 - `tests/ui/test_form_labels.py::test_placeholder_holds_only_example`
 - `tests/ui/test_form_labels.py::test_placeholder_holds_only_example`
 - `tests/ui/test_form_labels.py::test_placeholder_holds_only_example`
@@ -441,6 +457,8 @@
 - `tests/ui/test_form_labels.py::test_required_marker_matches_descriptor`
 - `tests/ui/test_form_labels.py::test_required_marker_matches_descriptor`
 - `tests/ui/test_form_labels.py::test_required_marker_matches_descriptor`
+- `tests/ui/test_form_labels.py::test_required_marker_matches_descriptor`
+- `tests/ui/test_form_labels.py::test_source_and_custom_fields_are_labelled`
 - `tests/ui/test_form_labels.py::test_source_and_custom_fields_are_labelled`
 - `tests/ui/test_form_labels.py::test_source_and_custom_fields_are_labelled`
 - `tests/ui/test_form_labels.py::test_source_and_custom_fields_are_labelled`

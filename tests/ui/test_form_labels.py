@@ -148,3 +148,52 @@ async def test_source_and_custom_fields_are_labelled(env):
         assert str(app.screen.query_one("#hint").content).startswith("* = 必填")
         # 自定义模式（默认）
         assert _labels(app.screen) == ["URL *", "文件名", "mission"]
+
+
+@pytest.mark.cap("present.tui")
+@pytest.mark.asyncio
+async def test_concurrent_source_rebuild_does_not_double_render(env, wait_for_fields):
+    """并发重建表单：最后一个数据源胜出，不得残留上一个源的字段。
+
+    真实缺陷（CI macos-3.12 暴露）：`_rendered_key` 曾在 `await remove_children()`
+    **之前**就赋值，且两个重建可能交错 mount。实测两种实现的结果：
+
+    - 修复后：`['brick 名 *（索引）']`
+    - 旧写法：`['目标名 *', '扇区（空=最新）', 'cadence', 'brick 名 *（索引）']`
+      —— tess 的字段残留在 legacy 表单里（用户看到的就是"字段不对"）。
+
+    断言因此必须精确：**标签数量 == 该源字段数**，且不得出现另一源的字段名。
+    """
+    import asyncio
+
+    from textual.widgets import Select
+
+    from myastro.descriptors import REGISTRY
+    from myastro.io.top import AstroTop
+
+    app = AstroTop()
+    async with app.run_test() as pilot:
+        await pilot.press("1")
+        await pilot.pause()
+        await pilot.press("f1")
+        await pilot.pause()
+        screen = app.screen
+        screen.query_one("#source", Select)
+
+        screen.source_key = "tess"
+        first = asyncio.create_task(screen._render_fields())
+        await asyncio.sleep(0)                 # 让第一个重建走到 await 点
+        screen.source_key = "legacy"
+        second = asyncio.create_task(screen._render_fields())
+        await asyncio.gather(first, second)
+
+        legacy_names = [f.label or f.name for f in REGISTRY["legacy"].fields]
+        await wait_for_fields(pilot, screen, legacy_names)
+        labels = [str(lbl.content)
+                  for lbl in screen.query("#fields .field-label")]
+        assert len(labels) == len(legacy_names), f"字段数量不对（残留？）：{labels}"
+        for name in legacy_names:
+            assert any(name in x for x in labels), (name, labels)
+        for name in [f.label or f.name for f in REGISTRY["tess"].fields]:
+            assert not any(name in x for x in labels), f"混入了 tess 字段：{labels}"
+        assert screen._rendered_key == screen.source_key == "legacy"

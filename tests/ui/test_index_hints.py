@@ -98,7 +98,7 @@ async def test_hint_unique_exact_value_has_no_extra_note(legacy_index):
 @pytest.mark.cap("present.tui")
 @pytest.mark.asyncio
 @pytest.mark.parametrize("source", ["legacy", "ztf", "ztf-meta", "tess"])
-async def test_index_marker_only_on_indexed_fields(env, source):
+async def test_index_marker_only_on_indexed_fields(env, source, wait_for_fields):
     """标签上的「（索引）」只出现在真正带索引的字段上。"""
     from textual.widgets import Select
 
@@ -112,7 +112,8 @@ async def test_index_marker_only_on_indexed_fields(env, source):
         await pilot.press("f1")
         await pilot.pause()
         app.screen.query_one("#source", Select).value = source
-        await pilot.pause()
+        names = [f.label or f.name for f in REGISTRY[source].fields]
+        await wait_for_fields(pilot, app.screen, names)
         labels = [str(lbl.content)
                   for lbl in app.screen.query(".field-label")][1:]  # 跳过数据源
         marked = [x for x in labels if "（索引）" in x]

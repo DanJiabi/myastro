@@ -55,6 +55,7 @@ class NewJobScreen(ModalScreen):
                            if prefill is not None and prefill.mode == "descriptor"
                            else self.CUSTOM)
         self._rendered_key = None
+        self._render_token = 0          # latest-wins：见 _render_fields
 
     def compose(self):
         with Vertical(id="newjob"):
@@ -103,14 +104,27 @@ class NewJobScreen(ModalScreen):
         await self._render_fields()
 
     async def _render_fields(self) -> None:
-        """按描述符 FieldSpec 声明重建参数输入区（数据驱动）。"""
+        """按描述符 FieldSpec 声明重建参数输入区（数据驱动）。
+
+        **并发保护（latest-wins）**：`remove_children` 与 `mount` 都是 await 点，
+        交出控制权期间可能到来新的数据源选择。旧实现在 await **之前**就写了
+        `_rendered_key`，于是那次新选择被判为"已渲染"直接跳过 → 表单最终停留在
+        **上一个源**的字段上（用户在 TUI 里快速切换数据源就能看到错字段），
+        并且可能在已被清空的容器上 `query(Input).first()` 抛 NoMatches。
+        现在：捕获本次 key → 每个 await 点后校验 token → **挂载完成后**才更新
+        `_rendered_key`，focus 也改成防御式取值。
+        """
         if self._rendered_key == self.source_key:
             return
-        self._rendered_key = self.source_key
+        self._render_token += 1
+        token = self._render_token
+        key = self.source_key                 # 捕获：await 期间可能已变
         box = self.query_one("#fields", Vertical)
         await box.remove_children()
+        if token != self._render_token:        # 已有更新的请求在跑 → 让位
+            return
         rows: list[tuple[str, Input]] = []
-        if self.source_key == self.CUSTOM:
+        if key == self.CUSTOM:
             c = (self._prefill.custom
                  if self._prefill and self._prefill.mode == "custom" else {})
             rows = [
@@ -122,10 +136,10 @@ class NewJobScreen(ModalScreen):
                                   value=c.get("mission", ""), id="mission")),
             ]
         else:
-            d = REGISTRY[self.source_key]
+            d = REGISTRY[key]
             pre = (self._prefill.params
                    if self._prefill and self._prefill.mode == "descriptor"
-                   and self._prefill.source == self.source_key else {})
+                   and self._prefill.source == key else {})
             rows = [(self._label_text(f),
                      Input(placeholder=self._placeholder(d, f),
                            value=self._value_of(f, pre),
@@ -138,7 +152,12 @@ class NewJobScreen(ModalScreen):
             Horizontal(Label(label, classes="field-label"), widget,
                        classes="field-row")
             for label, widget in rows])
-        box.query(Input).first().focus()
+        if token != self._render_token:        # 本轮已过时：不标记、不抢焦点
+            return
+        self._rendered_key = key               # 挂载成功后才是"已渲染"
+        first = next(iter(box.query(Input)), None)
+        if first is not None:
+            first.focus()
 
     def _title(self) -> str:
         if not self._prefill or not self._prefill:

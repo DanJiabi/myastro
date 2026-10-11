@@ -20,6 +20,13 @@
 
 ### 修复
 
+- **TUI 新建下载页：快速切换数据源会渲染出错误的字段**（CI 的 macos-3.12 抓到，
+  表现为索引标记数对不上；实测旧实现的渲染结果把上一个源的字段和新源的混在一起）：
+  `_rendered_key` 曾在 `await remove_children()` **之前**赋值，于是 await 期间到来的
+  新选择被判为"已渲染"而跳过，两次重建还可能交错 mount。
+  改为 latest-wins：捕获本次 key → 每个 await 点后校验 token → **挂载完成后**才更新
+  `_rendered_key`，focus 改为防御式取值（此前在空容器上 `query(Input).first()`
+  会抛 `NoMatches`）。
 - **并发打开同一个新库会 `database is locked`**：`PRAGMA journal_mode=WAL` 的
   变更**不经过 busy handler**——实测即使 `timeout=5s` 也立刻抛
   `sqlite3.OperationalError: database is locked`。并发 `init` 时必然有一个进程撞上。
