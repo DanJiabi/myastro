@@ -200,3 +200,69 @@ class TestTransitSearch:
         t, f = _transit()
         r = lc.transit_search(t, f, period_min=0.5, period_max=2.0)
         assert r.raw is not None and hasattr(r.raw, "period")
+
+
+@pytest.mark.cap("process.lc")
+class TestStellarParams:
+    """`r_star`/`m_star` 是可选恒星参数：给了就转发给 TLS，不给就保持原行为。
+
+    为什么需要它们：TLS 用 R_star/M_star 构造周期网格；不传时按 1.0/1.0 估算，
+    网格过稀就警告 "period_grid defaults to R_star=1 and M_star=1 ..."。
+    那条警告指向真问题（网格可能覆盖不到真实周期），因此**不抑制**，而是暴露参数。
+    """
+
+    def test_params_are_forwarded_when_given(self, monkeypatch):
+        """给了就转发（用假 TLS 捕获 kwargs，确定性、不依赖网络）。"""
+        import sys
+        import types
+
+        captured: dict = {}
+
+        class FakeResult:
+            period, depth, duration, T0, snr = 1.0, 0.99, 0.1, 0.0, 5.0
+
+        class FakeTLS:
+            def __init__(self, t, flux):
+                pass
+
+            def power(self, **kwargs):
+                captured.update(kwargs)
+                return FakeResult()
+
+        fake = types.ModuleType("transitleastsquares")
+        fake.transitleastsquares = FakeTLS
+        monkeypatch.setitem(sys.modules, "transitleastsquares", fake)
+
+        from myastro import lc
+        t = np.linspace(0, 10, 200)
+        f = np.ones_like(t)
+
+        lc.transit_search(t, f, r_star=1.2, m_star=0.9)
+        assert captured["R_star"] == 1.2 and captured["M_star"] == 0.9
+
+        captured.clear()
+        lc.transit_search(t, f)                       # 不给 → 不传这两个键
+        assert "R_star" not in captured and "M_star" not in captured
+
+    def test_real_run_with_stellar_params_is_warning_free(self):
+        """真实跑一次：给了恒星参数就不该再出现 period_grid 警告。
+
+        这是这条改动**唯一有意义的证据**——假 TLS 只能证明"转发到位"，
+        不能证明"警告消失"。
+        """
+        import warnings
+
+        rng = np.random.default_rng(42)
+        t = np.linspace(0, 20, 2000)
+        period, depth = 1.5, 0.01
+        phase = (t % period) / period
+        flux = np.where((phase > 0.45) & (phase < 0.55), 1 - depth, 1.0)
+        flux = flux + rng.normal(0, 3e-4, t.size)
+
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            result = lc.transit_search(t, flux, period_min=0.5, period_max=3.0,
+                                       r_star=1.0, m_star=1.0)
+        noisy = [str(w.message) for w in caught if "period_grid" in str(w.message)]
+        assert not noisy, f"给了恒星参数仍出现网格警告：{noisy}"
+        assert result.period > 0 and 0 < result.depth < 1

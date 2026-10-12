@@ -3,6 +3,30 @@
 本文件记录对使用者有影响的变更。格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [0.4.2] - 2026-10-12
+
+### 新增
+
+- **可运行的示例插件** `examples/myastro-source-example/`（`demo` 源：离线合成光变）：
+  `docs/plugin-api.md` 里那段示例的完整可安装版本，演示协议 v1 的全部要点。
+  随 sdist 发布，读源码包的人可离线看到。CI 会安装它并真取一次。
+- **处理层正式公开**：`lc` 纳入门面 `__all__`（37 → 38）。此前它是"事实公开
+  但名义未导出"（`from myastro import lc` 一直可用）。
+- **`lc.transit_search` 新增可选恒星参数 `r_star` / `m_star`**：TLS 用它们构造周期网格；
+  不传时按 1.0/1.0 估算并在网格过稀时警告（那条警告指向真问题，故暴露参数而非抑制）。
+  旧调用方式不变。
+
+### 修复
+
+- **契约守卫的覆盖漏洞**：快照初版只记门面 `__all__` 的条目名，**公开子模块
+  （`lc`）里的函数签名逃过检查**——实测给 `transit_search` 加参数后守卫仍报"一致"。
+  现在递归进子模块的 `__all__` 并记录每个函数的签名；`tests/kernel/test_contract.py`
+  新增用例锁住该能力（含断言恒星参数出现在快照里）。
+
+### 说明（你需要做什么）
+
+- 无需改动：`transit_search` 的旧调用、`from myastro import lc` 都照旧可用。
+
 ## [0.4.1] - 2026-10-12
 
 ### 修复
@@ -288,3 +312,4 @@
 [0.3.5]: https://github.com/DanJiabi/myastro/releases/tag/v0.3.5
 [0.4.0]: https://github.com/DanJiabi/myastro/releases/tag/v0.4.0
 [0.4.1]: https://github.com/DanJiabi/myastro/releases/tag/v0.4.1
+[0.4.2]: https://github.com/DanJiabi/myastro/releases/tag/v0.4.2

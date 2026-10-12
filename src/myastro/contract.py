@@ -83,7 +83,16 @@ def _facade_api() -> dict[str, Any]:
     for name in sorted(ma.__all__):
         obj = getattr(ma, name)
         entry: dict[str, Any] = {"kind": type(obj).__name__}
-        if callable(obj):
+        if inspect.ismodule(obj):
+            # 公开子模块（如 `lc`）里的函数同样是契约面：只记模块名会让
+            # `transit_search(...)` 这类签名变化完全逃过守卫
+            # （实测：给 transit_search 加参数后守卫仍报"一致"）。
+            exports = getattr(obj, "__all__", None) or []
+            if exports:
+                entry["exports"] = {
+                    n: (_signature_of(getattr(obj, n)) or {})
+                    for n in sorted(exports)}
+        elif callable(obj):
             sig = _signature_of(obj)
             if sig is not None:
                 entry["params"] = sig

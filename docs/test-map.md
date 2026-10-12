@@ -4,12 +4,12 @@
 
 能力 id 定义在 `src/myastro/io/testmap.py`；能力说明与成熟度见 [capabilities.md](capabilities.md)。
 
-共 25 项能力、1443 个测试。
+共 25 项能力、1450 个测试。
 
 | 能力 | 说明 | 测试数 |
 |---|---|---|
 | `source.registry` | 源注册表与描述符：接入声明、示例参数、漂移守卫 | 43 |
-| `source.contract` | 单源实现契约：参数校验、落盘、入库、空结果 | 114 |
+| `source.contract` | 单源实现契约：参数校验、落盘、入库、空结果 | 118 |
 | `source.health` | 源健康探测与状态覆盖（ok/degraded/unreachable） | 18 |
 | `source.dormant` | 休眠源防腐烂（asassn：后端失联期间保持正确） | 2 |
 | `acquire.fetch` | 单件获取：缓存短路、原子落盘、入库、aria2 对账 | 29 |
@@ -24,14 +24,14 @@
 | `manage.search` | 本地检索（目标/坐标/时间） | 31 |
 | `manage.coverage` | 索引覆盖率统计 | 6 |
 | `manage.index` | 索引构建与浏览（builder/url 两类来源） | 16 |
-| `process.lc` | 时序处理工具：归一化、折叠、周期搜索、凌星搜索 | 18 |
+| `process.lc` | 时序处理工具：归一化、折叠、周期搜索、凌星搜索 | 20 |
 | `present.tui` | TUI 行为：面板、键位、身份寻址、格式化 | 749 |
 | `present.cli` | CLI 行为：子命令参数接线、输出与退出码 | 27 |
 | `ci.config` | CI 工作流配置（可解析性/结构） | 16 |
 | `manage.doctor` | 环境自检：依赖/路径可写/账本/文件系统/索引/平台 | 15 |
 | `manage.backup` | 账本备份与恢复：在线备份、默认拒绝覆盖、安全副本 | 23 |
 | `facade.api` | 门面契约：错误分类、参数校验、执行器隐身 | 3 |
-| `design.contract` | 契约快照（门面 API/CLI/退出码/schema/注册表） | 23 |
+| `design.contract` | 契约快照（门面 API/CLI/退出码/schema/注册表） | 24 |
 | `design.guards` | 设计守卫：文档同步、边界规则、能力覆盖 | 217 |
 
 ## 能力 → 测试明细
@@ -84,6 +84,10 @@
 
 ### `source.contract` — 单源实现契约：参数校验、落盘、入库、空结果
 
+- `tests/kernel/test_example_plugin.py::TestExamplePlugin::test_example_declares_entry_point_for_batch2`
+- `tests/kernel/test_example_plugin.py::TestExamplePlugin::test_example_only_uses_public_api`
+- `tests/kernel/test_example_plugin.py::TestExamplePlugin::test_fetches_offline_and_lands_in_ledger`
+- `tests/kernel/test_example_plugin.py::TestExamplePlugin::test_registers_source_and_task`
 - `tests/kernel/test_plugin_contract.py::TestBuiltinUnchanged::test_all_builtins_pass_validation`
 - `tests/kernel/test_plugin_contract.py::TestBuiltinUnchanged::test_builtin_lists_are_frozen_snapshots`
 - `tests/kernel/test_plugin_contract.py::TestEndToEnd::test_plugin_task_fetches_end_to_end`
@@ -442,6 +446,8 @@
 - `tests/unit/test_lc.py::TestPeriodSearch::test_pdm_not_worse_than_ls_on_asymmetric`
 - `tests/unit/test_lc.py::TestPeriodSearch::test_refine_curve_exposed_for_plotting`
 - `tests/unit/test_lc.py::TestPeriodSearch::test_sine_recovery`
+- `tests/unit/test_lc.py::TestStellarParams::test_params_are_forwarded_when_given`
+- `tests/unit/test_lc.py::TestStellarParams::test_real_run_with_stellar_params_is_warning_free`
 - `tests/unit/test_lc.py::TestTransforms::test_bin_phase_empty_bins_nan`
 - `tests/unit/test_lc.py::TestTransforms::test_bin_phase_matches_convention`
 - `tests/unit/test_lc.py::TestTransforms::test_clip_range`
@@ -1330,6 +1336,7 @@
 - `tests/kernel/test_contract.py::TestProblems::test_reports_added_removed_and_changed_items`
 - `tests/kernel/test_contract.py::TestSnapshot::test_cli_covers_nested_commands`
 - `tests/kernel/test_contract.py::TestSnapshot::test_covers_every_facade_export`
+- `tests/kernel/test_contract.py::TestSnapshot::test_covers_public_submodule_exports`
 - `tests/kernel/test_contract.py::TestSnapshot::test_exit_codes_are_snapshotted`
 - `tests/kernel/test_contract.py::TestSnapshot::test_is_deterministic`
 - `tests/kernel/test_contract.py::TestSnapshot::test_ledger_schema_matches_scene_version`

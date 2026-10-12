@@ -225,7 +225,9 @@ class TransitResult:
 
 def transit_search(t: np.ndarray, flux: np.ndarray,
                    period_min: float = 0.5, period_max: float = 3.0,
-                   n_transits_min: int = 3) -> TransitResult:
+                   n_transits_min: int = 3,
+                   r_star: float | None = None,
+                   m_star: float | None = None) -> TransitResult:
     """TLS 凌星搜索。
 
     两处焊死的坑（早期真实故障）：
@@ -233,14 +235,24 @@ def transit_search(t: np.ndarray, flux: np.ndarray,
        并静默返回 nan，而不是报错
     2. **depth 语义修正**——TLS 的 `depth` 是凌内/凌外通量比（如 0.984），
        真深度 = 1 − depth（如 1.6%）；这里直接返回真深度
+
+    `r_star` / `m_star`（太阳半径/质量，单位同 TLS）是**可选**的恒星参数：
+    不传时 TLS 会按默认值（1.0/1.0）构造周期网格，并在网格过稀时警告
+    （"period_grid defaults to R_star=1 and M_star=1 ..."）——那条警告是**真问题**
+    的提示（网格可能不足以覆盖真实周期），不是噪音，所以我们不抑制它，
+    而是把参数暴露出来让调用方给出真实值。传了就转发给 TLS。
     """
     from transitleastsquares import transitleastsquares
 
     t = np.asarray(t, dtype=float)
     flux = normalize(flux)
-    res = transitleastsquares(t, flux).power(
-        period_min=period_min, period_max=period_max,
-        n_transits_min=n_transits_min)
+    kwargs: dict = {"period_min": period_min, "period_max": period_max,
+                    "n_transits_min": n_transits_min}
+    if r_star is not None:
+        kwargs["R_star"] = float(r_star)
+    if m_star is not None:
+        kwargs["M_star"] = float(m_star)
+    res = transitleastsquares(t, flux).power(**kwargs)
     return TransitResult(
         period=float(res.period),
         depth=float(1.0 - res.depth),

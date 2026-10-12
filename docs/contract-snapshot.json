@@ -563,6 +563,283 @@
       "kind": "function",
       "params": {}
     },
+    "lc": {
+      "exports": {
+        "PeriodResult": {
+          "best_period": [
+            "POSITIONAL_OR_KEYWORD",
+            null,
+            "float"
+          ],
+          "coarse_period": [
+            "POSITIONAL_OR_KEYWORD",
+            null,
+            "float"
+          ],
+          "method": [
+            "POSITIONAL_OR_KEYWORD",
+            null,
+            "str"
+          ],
+          "periods": [
+            "POSITIONAL_OR_KEYWORD",
+            null,
+            "np.ndarray"
+          ],
+          "power": [
+            "POSITIONAL_OR_KEYWORD",
+            null,
+            "np.ndarray"
+          ],
+          "refine_periods": [
+            "POSITIONAL_OR_KEYWORD",
+            "None",
+            "np.ndarray | None"
+          ],
+          "refine_theta": [
+            "POSITIONAL_OR_KEYWORD",
+            "None",
+            "np.ndarray | None"
+          ]
+        },
+        "TransitResult": {
+          "depth": [
+            "POSITIONAL_OR_KEYWORD",
+            null,
+            "float"
+          ],
+          "duration_days": [
+            "POSITIONAL_OR_KEYWORD",
+            null,
+            "float"
+          ],
+          "period": [
+            "POSITIONAL_OR_KEYWORD",
+            null,
+            "float"
+          ],
+          "raw": [
+            "POSITIONAL_OR_KEYWORD",
+            "None",
+            "object"
+          ],
+          "snr": [
+            "POSITIONAL_OR_KEYWORD",
+            null,
+            "float"
+          ],
+          "t0": [
+            "POSITIONAL_OR_KEYWORD",
+            null,
+            "float"
+          ]
+        },
+        "bin_phase": {
+          "flux": [
+            "POSITIONAL_OR_KEYWORD",
+            null,
+            "np.ndarray"
+          ],
+          "nbins": [
+            "POSITIONAL_OR_KEYWORD",
+            "30",
+            "int"
+          ],
+          "phase": [
+            "POSITIONAL_OR_KEYWORD",
+            null,
+            "np.ndarray"
+          ],
+          "statistic": [
+            "POSITIONAL_OR_KEYWORD",
+            "'median'",
+            "str"
+          ]
+        },
+        "clip_range": {
+          "flux": [
+            "POSITIONAL_OR_KEYWORD",
+            null,
+            "np.ndarray"
+          ],
+          "high": [
+            "POSITIONAL_OR_KEYWORD",
+            null,
+            "float"
+          ],
+          "low": [
+            "POSITIONAL_OR_KEYWORD",
+            null,
+            "float"
+          ],
+          "t": [
+            "POSITIONAL_OR_KEYWORD",
+            "None",
+            "np.ndarray | None"
+          ]
+        },
+        "fold": {
+          "centered": [
+            "POSITIONAL_OR_KEYWORD",
+            "True",
+            "bool"
+          ],
+          "flux": [
+            "POSITIONAL_OR_KEYWORD",
+            null,
+            "np.ndarray"
+          ],
+          "period": [
+            "POSITIONAL_OR_KEYWORD",
+            null,
+            "float"
+          ],
+          "t": [
+            "POSITIONAL_OR_KEYWORD",
+            null,
+            "np.ndarray"
+          ],
+          "t0": [
+            "POSITIONAL_OR_KEYWORD",
+            "None",
+            "float | None"
+          ]
+        },
+        "mag_amplitude": {
+          "flux": [
+            "POSITIONAL_OR_KEYWORD",
+            null,
+            "np.ndarray"
+          ]
+        },
+        "normalize": {
+          "flux": [
+            "POSITIONAL_OR_KEYWORD",
+            null,
+            "np.ndarray"
+          ]
+        },
+        "period_search": {
+          "flux": [
+            "POSITIONAL_OR_KEYWORD",
+            null,
+            "np.ndarray"
+          ],
+          "max_period": [
+            "POSITIONAL_OR_KEYWORD",
+            null,
+            "float"
+          ],
+          "min_period": [
+            "POSITIONAL_OR_KEYWORD",
+            null,
+            "float"
+          ],
+          "refine": [
+            "POSITIONAL_OR_KEYWORD",
+            "True",
+            "bool"
+          ],
+          "refine_steps": [
+            "POSITIONAL_OR_KEYWORD",
+            "2000",
+            "int"
+          ],
+          "refine_window": [
+            "POSITIONAL_OR_KEYWORD",
+            "0.05",
+            "float"
+          ],
+          "samples_per_peak": [
+            "POSITIONAL_OR_KEYWORD",
+            "10",
+            "int"
+          ],
+          "t": [
+            "POSITIONAL_OR_KEYWORD",
+            null,
+            "np.ndarray"
+          ]
+        },
+        "quality_cut": {
+          "df": [
+            "POSITIONAL_OR_KEYWORD",
+            null,
+            ""
+          ],
+          "keep": [
+            "POSITIONAL_OR_KEYWORD",
+            "0",
+            "int"
+          ],
+          "quality_col": [
+            "POSITIONAL_OR_KEYWORD",
+            "'quality'",
+            "str"
+          ]
+        },
+        "sigma_clip": {
+          "flux": [
+            "POSITIONAL_OR_KEYWORD",
+            null,
+            "np.ndarray"
+          ],
+          "iters": [
+            "POSITIONAL_OR_KEYWORD",
+            "3",
+            "int"
+          ],
+          "sigma": [
+            "POSITIONAL_OR_KEYWORD",
+            "5.0",
+            "float"
+          ],
+          "t": [
+            "POSITIONAL_OR_KEYWORD",
+            null,
+            "np.ndarray"
+          ]
+        },
+        "transit_search": {
+          "flux": [
+            "POSITIONAL_OR_KEYWORD",
+            null,
+            "np.ndarray"
+          ],
+          "m_star": [
+            "POSITIONAL_OR_KEYWORD",
+            "None",
+            "float | None"
+          ],
+          "n_transits_min": [
+            "POSITIONAL_OR_KEYWORD",
+            "3",
+            "int"
+          ],
+          "period_max": [
+            "POSITIONAL_OR_KEYWORD",
+            "3.0",
+            "float"
+          ],
+          "period_min": [
+            "POSITIONAL_OR_KEYWORD",
+            "0.5",
+            "float"
+          ],
+          "r_star": [
+            "POSITIONAL_OR_KEYWORD",
+            "None",
+            "float | None"
+          ],
+          "t": [
+            "POSITIONAL_OR_KEYWORD",
+            null,
+            "np.ndarray"
+          ]
+        }
+      },
+      "kind": "module"
+    },
     "prefill": {
       "kind": "function",
       "params": {

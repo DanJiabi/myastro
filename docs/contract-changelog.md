@@ -26,6 +26,8 @@
 
 | 2026-10-12 | **0.4.1** | 插件作者公开面 | 新增公开导出 `write_parquet` / `FetchResult` / `RunContext`（`__all__` 34 → 37）；`facade.PLUGIN_EXPORTS` 声明这三者 | **0.4.0 实测缺陷**：协议要求任务返回 `FetchResult`、用统一落盘，但这三个名字当时没有公开，`docs/plugin-api.md` 的示例照着写在已安装的 wheel 上直接失败（`module 'myastro' has no attribute 'write_parquet'`） | 纯新增；无破坏性变化 | `tests/kernel/test_plugin_contract.py::test_plugin_doc_example_uses_public_api_only`（解析文档里的 `ma.<名>` 是否都在 `__all__`，变异验证可红）+ 端到端改用纯公开 API |
 
+| 2026-10-12 | **0.4.2** | ① 处理层公开面：`lc` 纳入 `__all__`（37 → 38）；② `lc.transit_search` 新增可选 `r_star`/`m_star`；③ 契约守卫覆盖公开子模块 | ① 处理层一直通过 `from myastro import lc` 使用，却是"事实公开、名义未导出"；② TLS 无恒星参数时按 1.0/1.0 估周期网格并警告（指向真问题，故暴露参数而非抑制）；③ **守卫覆盖漏洞**：快照初版只记 `__all__` 条目名，子模块内的签名变化逃过检查（实测：加参数后仍报"一致"） | 纯新增：`transit_search` 旧调用不变；`lc` 此前即可用（`from myastro import lc`），现在正式导出 | `tests/kernel/test_contract.py::test_covers_public_submodule_exports`（锁住子模块覆盖 + 恒星参数在快照里）；`tests/unit/test_lc.py::TestStellarParams`（转发 + 真实跑一次无警告） |
+
 ## 快照机制的建立（2026-10-11）
 
 - 生成器 `src/myastro/contract.py`（顶层模块——放 `io/` 会违反分层：内核不许依赖 `cli`）。

@@ -110,4 +110,20 @@ ma.register_source(ma.SourceDescriptor(
 | 批次 | 内容 | 状态 |
 |---|---|---|
 | 2（L3） | entry-points 组 `myastro.sources` 自动发现 + `MYASTRO_SOURCES` 开发用环境变量 + 加载失败由 `doctor` 报告（不拖垮 CLI/TUI） | 待设计 |
-| 3 | 仓库内 `examples/` 示例插件包 + CI 安装并端到端取一次 | 待做 |
+| 3 | 仓库内示例插件包 + CI 安装并端到端取一次 | **已完成** |
+
+### 批次 3：可运行的参考示例
+
+`examples/myastro-source-example/`（`demo` 源：离线合成光变）——它就是 §2 那段示例的完整可安装版本：
+
+```bash
+pip install -e examples/myastro-source-example
+python -c "import myastro_example_source" && myastro fetch demo --target M31
+```
+
+它同时是**约束的活演示**：只用公开 API、任务按名注册、进文件名的字段声明 `pattern`、
+落盘走 `ma.write_parquet` 且写在 `ctx.dest_dir` 内。
+
+守候：`tests/kernel/test_example_plugin.py`（本机导入即注册 → 真取一次 →
+断言落盘/入账本/可检索；并断言示例**不导入** `myastro.io.*`，AST 级检查、变异验证可红），
+以及 CI 的 build 任务里同名步骤（安装示例包后按文档写法跑一遍）。

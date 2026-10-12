@@ -76,6 +76,25 @@ jobs:
           export MYASTRO_DATA="$RUNNER_TEMP/data" MYASTRO_DB="$RUNNER_TEMP/astro.db"
           myastro init
           myastro doctor
+      - name: Example plugin (batch 3) end to end
+        run: |
+          # 示例是协议的"门面"：文档说照着抄就能跑，CI 必须证明这一点。
+          # 装示例包 → 按文档写的方式导入 → 真取一次 → 断言落盘与入账本。
+          pip install -e examples/myastro-source-example
+          export MYASTRO_DATA="$RUNNER_TEMP/data" MYASTRO_DB="$RUNNER_TEMP/astro.db"
+          myastro init
+          python - <<'PY'
+          import myastro_example_source          # 触发注册（批次 2 之前需显式导入）
+          import myastro as ma
+
+          assert "demo" in {s["name"] for s in ma.sources()}, "示例源未出现在源列表"
+          result = ma.fetch("demo", target="M31")
+          assert result.paths[0].exists(), "示例未落盘"
+          assert result.dataset_id > 0, "示例未入账本"
+          assert ma.search(source="demo"), "示例数据不可检索"
+          print("example plugin ok:", result.paths[0].name, result.meta)
+          PY
+
       - uses: actions/upload-artifact@v4
         with:
           name: dist

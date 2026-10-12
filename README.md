@@ -129,7 +129,7 @@ Exit codes are a contract, so scripts can branch:
 
 ## Documentation
 
-Extending myastro with your own data source: `docs/plugin-api.md` (plugin protocol v1).
+Extending myastro with your own data source: `docs/plugin-api.md` (plugin protocol v1) plus a runnable reference package in `examples/myastro-source-example/`.
 
 Contributor-facing process docs (Chinese): `docs/change-policy.md` (change classes, granularity limits) and `docs/contract-changelog.md` (every change to the public contract).
 

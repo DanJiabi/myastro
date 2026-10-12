@@ -1,6 +1,6 @@
 [project]
 name = "myastro"
-version = "0.4.1"
+version = "0.4.2"
 description = "Personal astronomy data toolkit: fetch, ledger, dedup, coverage, TUI"
 readme = "README.md"
 license = "MIT"
@@ -71,6 +71,8 @@ include = [
     "docs/",
     "manifests/",
     "githooks/",
+    # 插件协议的参考示例：读 sdist 的人应该能离线看到"照着抄就能跑"的完整包
+    "examples/",
     "LICENSE",
     "README.md",
     "CHANGELOG.md",

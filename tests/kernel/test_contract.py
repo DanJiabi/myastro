@@ -44,6 +44,20 @@ class TestSnapshot:
         cols = {c["name"] for c in snap["tables"]["jobs"]}
         assert {"id", "status", "dataset_id", "error_type"} <= cols
 
+    def test_covers_public_submodule_exports(self):
+        """公开子模块（`lc`）里的函数签名也必须在快照里。
+
+        真实漏洞：`from myastro import lc` 是处理层的正式入口，但快照初版只记
+        `__all__` 的条目名，于是给 `transit_search` 加参数时守卫**毫无反应**
+        （实测报"一致"）。现在递归进子模块的 `__all__`。
+        """
+        snap = contract.snapshot()
+        assert snap["facade_api"]["lc"]["kind"] == "module"
+        exports = snap["facade_api"]["lc"]["exports"]
+        assert "transit_search" in exports and "period_search" in exports
+        params = exports["transit_search"]
+        assert {"r_star", "m_star"} <= set(params), "恒星参数必须被快照覆盖"
+
     def test_exit_codes_are_snapshotted(self):
         from myastro.cli import EXIT_CODES
 

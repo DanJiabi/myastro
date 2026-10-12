@@ -1,0 +1,19 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "myastro-source-example"
+version = "0.1.0"
+description = "Example myastro data-source plugin (offline synthetic light curve)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+dependencies = ["myastro>=0.4.1", "numpy", "pandas"]
+
+# 批次 2 落地后 myastro 会按这个组自动发现插件；现在它只是声明（不生效，也无害）。
+[project.entry-points."myastro.sources"]
+demo = "myastro_example_source"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/myastro_example_source"]
