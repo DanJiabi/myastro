@@ -58,7 +58,7 @@ class FieldSpec:
         return value
 
 
-# ── 插件协议 v1（docs/plugin-api.md）──
+# ── 插件协议 v1（docs/zh/dev/plugin-api.md）──
 # 第三方源的契约版本：插件在描述符里声明 api_version，不匹配则拒绝注册（不崩）。
 PLUGIN_API_VERSION = 1
 _PLUGIN_NAME_RE = re.compile(r"^[a-z][a-z0-9-]{0,31}$")

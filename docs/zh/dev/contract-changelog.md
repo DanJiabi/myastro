@@ -2,7 +2,7 @@
 
 > 记录**对外可观察契约**的每一次变化：门面 API、描述符/注册表、CLI 命令与退出码、
 > 账本 schema、错误分类。
-> 规则见 `docs/change-policy.md` §5；L2 改动必须在动手时同步追加一条。
+> 规则见 `docs/zh/dev/change-policy.md` §5；L2 改动必须在动手时同步追加一条。
 
 ## 记录格式
 
@@ -24,9 +24,11 @@
 验收测试：`tests/kernel/test_plugin_contract.py::test_plugin_does_not_perturb_guards_or_snapshot`
 （注册插件后快照字节不变）。
 
-| 2026-10-12 | **0.4.1** | 插件作者公开面 | 新增公开导出 `write_parquet` / `FetchResult` / `RunContext`（`__all__` 34 → 37）；`facade.PLUGIN_EXPORTS` 声明这三者 | **0.4.0 实测缺陷**：协议要求任务返回 `FetchResult`、用统一落盘，但这三个名字当时没有公开，`docs/plugin-api.md` 的示例照着写在已安装的 wheel 上直接失败（`module 'myastro' has no attribute 'write_parquet'`） | 纯新增；无破坏性变化 | `tests/kernel/test_plugin_contract.py::test_plugin_doc_example_uses_public_api_only`（解析文档里的 `ma.<名>` 是否都在 `__all__`，变异验证可红）+ 端到端改用纯公开 API |
+| 2026-10-12 | **0.4.1** | 插件作者公开面 | 新增公开导出 `write_parquet` / `FetchResult` / `RunContext`（`__all__` 34 → 37）；`facade.PLUGIN_EXPORTS` 声明这三者 | **0.4.0 实测缺陷**：协议要求任务返回 `FetchResult`、用统一落盘，但这三个名字当时没有公开，`docs/zh/dev/plugin-api.md` 的示例照着写在已安装的 wheel 上直接失败（`module 'myastro' has no attribute 'write_parquet'`） | 纯新增；无破坏性变化 | `tests/kernel/test_plugin_contract.py::test_plugin_doc_example_uses_public_api_only`（解析文档里的 `ma.<名>` 是否都在 `__all__`，变异验证可红）+ 端到端改用纯公开 API |
 
 | 2026-10-12 | **0.4.2** | ① 处理层公开面：`lc` 纳入 `__all__`（37 → 38）；② `lc.transit_search` 新增可选 `r_star`/`m_star`；③ 契约守卫覆盖公开子模块 | ① 处理层一直通过 `from myastro import lc` 使用，却是"事实公开、名义未导出"；② TLS 无恒星参数时按 1.0/1.0 估周期网格并警告（指向真问题，故暴露参数而非抑制）；③ **守卫覆盖漏洞**：快照初版只记 `__all__` 条目名，子模块内的签名变化逃过检查（实测：加参数后仍报"一致"） | 纯新增：`transit_search` 旧调用不变；`lc` 此前即可用（`from myastro import lc`），现在正式导出 | `tests/kernel/test_contract.py::test_covers_public_submodule_exports`（锁住子模块覆盖 + 恒星参数在快照里）；`tests/unit/test_lc.py::TestStellarParams`（转发 + 真实跑一次无警告） |
+
+| 2026-10-12 | **0.4.3** | 文档架构与安装面 | ① 文档树重构为 `docs/{zh,en}`（中文开发文档进 `docs/zh/dev/`）；② 新增 `[docs]` extra（mkdocs-material + mkdocs-static-i18n）并并入 `[dev]`；③ 双语配对守卫规则升级为"英文页必须在中文有同名对应" | 为发布双语文档站做准备；`[docs]` 让贡献者一条命令装齐站点依赖 | ① 文档路径变化（对外链接会变，README/CHANGELOG 已同步）；② 纯新增 extra；③ 守卫规则收紧（英文孤儿页现在会红） | `tests/guards/test_docs_paths.py`（递归扫描 + 配对规则）、`mkdocs build --strict`（CI docs 工作流） |
 
 ## 快照机制的建立（2026-10-11）
 
@@ -58,7 +60,7 @@
 ### 门面 API（`__all__` 定义在 `src/myastro/__init__.py`，函数在 `src/myastro/facade.py`）
 
 - **自 0.2.0 起零漂移**：`__all__` 一直 **33 项**；facade 一直 **27 个函数**，
-  0 增、0 删、**0 签名变更**（AST 实测；方法见 `docs/change-policy.md` §6）。
+  0 增、0 删、**0 签名变更**（AST 实测；方法见 `docs/zh/dev/change-policy.md` §6）。
 - 覆盖面：`fetch`/`batch`/`retry`/`search`/`coverage`/`audit`/`health`/`index_*`、
   账本运维（`doctor`/`backup`/`restore`）、处理层（`lc.*`）、错误类型与 `FieldSpec`/`SourceDescriptor`。
 - 订正：本表初版写的"16 → 37（+21）"是用正则数 `facade.py` 里的引号字符串得到的**错数**。
@@ -73,7 +75,7 @@
 ### 注册表（`src/myastro/descriptors.py`、`src/myastro/io/urls.py`、`src/myastro/tasks.py`）
 
 - 描述符源 10 个、URL 源 2 个（`legacy`/`ztf`）、任务表与描述符一一对应；
-  漂移由 `tests/guards/` 守卫（见 `docs/test-map.md`）。
+  漂移由 `tests/guards/` 守卫（见 `docs/zh/dev/test-map.md`）。
 - `FieldSpec` 增加 `pattern` / `name_like`（参数校验，防路径穿越）——**加入于 0.2.0 之前**，
   之后未再改判定语义。
 

@@ -3,7 +3,7 @@
 为什么需要：0.2.0 → 0.3.5 的复盘里，对外契约其实零漂移（门面 33 项、facade 27 个函数、
 CLI 24 个子命令、退出码 4 项、schema v1–v8 全未变），但**我是用正则数引号字符串量出来的，
 数是错的**。手工统计会错，所以让机器守着：本模块生成快照，`tests/guards/` 里的守卫
-逐字节比对，任何契约变化都必须显式重新生成并在 `docs/contract-changelog.md` 里写理由。
+逐字节比对，任何契约变化都必须显式重新生成并在 `docs/zh/dev/contract-changelog.md` 里写理由。
 
 覆盖（= 契约面）：
 - `facade_api`：`myastro.__all__` 的每一项及其参数（名/种类/默认值/注解字符串）
@@ -196,7 +196,7 @@ def problems(path: Path | None = None) -> list[str]:
             if key not in old:
                 out.append(f"{section}.{key}: 新增（代码里有、快照里没有 → "
                            f"若是有意的契约变更，重新生成快照并登记到 "
-                           f"docs/contract-changelog.md）")
+                           f"docs/zh/dev/contract-changelog.md）")
             elif key not in new:
                 out.append(f"{section}.{key}: 删除（快照里有、代码里没有 → 同上）")
             else:

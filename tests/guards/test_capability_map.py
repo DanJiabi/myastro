@@ -5,7 +5,7 @@
 - 标记 id 必须在注册表中（拼错即红，配合 pytest --strict-markers）
 - 每个注册能力必须有测试（禁止无人证明的能力声明）
 - capabilities.md 必须标注每个能力 id
-- docs/test-map.md 必须与生成器一致（手改即红）
+- docs/zh/dev/test-map.md 必须与生成器一致（手改即红）
 - 门面每个导出都必须被测试引用（第三方 API 无死角）
 - 分层导入边界：facade/ 不得碰内核内部；unit/ 不得碰 db/网络/TUI
 """
@@ -50,7 +50,7 @@ def test_capabilities_doc_mentions_every_id():
 
 @pytest.mark.cap("design.guards")
 def test_test_map_doc_is_generated():
-    """docs/test-map.md 与生成器逐字一致（防手改/防漏更新）。"""
+    """docs/zh/dev/test-map.md 与生成器逐字一致（防手改/防漏更新）。"""
     assert testmap.DOC.exists(), "test-map.md 不存在：跑 myastro test-map"
     assert testmap.DOC.read_text() == testmap.render(), \
         "test-map.md 与生成器不一致：跑 myastro test-map"

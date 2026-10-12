@@ -114,7 +114,7 @@ class TestHappyPaths:
         assert code == 0 and "已移除" in out
 
     def test_test_map_write_and_check(self, env, monkeypatch, capsys, tmp_path):
-        """生成到临时路径再自检（测试不改仓库里的 docs/test-map.md）。"""
+        """生成到临时路径再自检（测试不改仓库里的 docs/zh/dev/test-map.md）。"""
         from myastro.io import testmap
         monkeypatch.setattr(testmap, "DOC", tmp_path / "test-map.md")
         code, out, _ = run(capsys, "test-map")

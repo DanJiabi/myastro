@@ -77,6 +77,6 @@ myastro restore ~/myastro-backup/<时间戳> --force
 
 ## 接下来
 
-- [capabilities.md](../capabilities.md)——能力清单与成熟度
-- [processing.md](../processing.md)——各处理阶段的规则与失败语义
+- [capabilities.md](dev/capabilities.md)——能力清单与成熟度
+- [processing.md](dev/processing.md)——各处理阶段的规则与失败语义
 - `notebooks/` 下有端到端示例（输出已清空）

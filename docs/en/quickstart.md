@@ -80,6 +80,6 @@ parameters, plus the sha baselines) cannot. Back it up.
 
 ## Where next
 
-- [capabilities.md](../capabilities.md) — what exists, at which maturity (中文)
-- [processing.md](../processing.md) — pipeline behaviour and failure semantics (中文)
+- [capabilities.md](../zh/dev/capabilities.md) — what exists, at which maturity (中文)
+- [processing.md](../zh/dev/processing.md) — pipeline behaviour and failure semantics (中文)
 - Notebooks under `notebooks/` show end-to-end analyses (outputs cleared).

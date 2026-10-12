@@ -50,12 +50,12 @@
 | 级别 | 判定标准 | 颗粒度上限 | 流程 |
 |---|---|---|---|
 | **L1 局部** | 不改任何对外契约：新增数据源、单文件 bug 修复、文档、提示文案、测试 | ≤3 文件、≤150 行 diff | 直接做，跑门（`pytest` + `ruff` + `pyflakes` + 生成物） |
-| **L2 契约** | 改对外可观察的东西：门面 `__all__`/签名、`FieldSpec` 与描述符、CLI 命令与退出码、账本 schema、任务/URL 注册表、错误分类 | ≤6 文件，**且只改一个契约点** | **先出草案（影响面 + 兼容/迁移说明）→ 批准 → 做**；必须更新 `docs/contract-changelog.md` |
+| **L2 契约** | 改对外可观察的东西：门面 `__all__`/签名、`FieldSpec` 与描述符、CLI 命令与退出码、账本 schema、任务/URL 注册表、错误分类 | ≤6 文件，**且只改一个契约点** | **先出草案（影响面 + 兼容/迁移说明）→ 批准 → 做**；必须更新 `docs/zh/dev/contract-changelog.md` |
 | **L3 结构** | 改层次/生命周期/并发/存储：作业生命周期、锁与原子性、层边界、TUI 渲染核心、文件布局 | 1 个子系统 + 1 条不变量 | **先出设计（含不变量清单与反例测试计划）→ 批准 → 拆成三个提交**：守卫/测试 → 实现 → 迁移；**每版最多 1 项 L3，之后冻结一版专注验证** |
 
 **文件预算怎么算**（2026-10-11 细化）：**生成物与簿记不计入**上限。具体指
-- 生成物：`docs/contract-snapshot.json`、`docs/test-map.md`、`docs/design-io.md`（含快照与矩阵）；
-- 簿记：`CHANGELOG.md`、`docs/contract-changelog.md`；
+- 生成物：`docs/contract-snapshot.json`、`docs/zh/dev/test-map.md`、`docs/zh/dev/design-io.md`（含快照与矩阵）；
+- 簿记：`CHANGELOG.md`、`docs/zh/dev/contract-changelog.md`；
 - 按新契约被动更新的既有守卫/既有测试（不是新增决策面）。
 
 理由与依据：0.4.0 批次 1a 实际动了 9 个文件，但真正的"决策面"只有
@@ -75,7 +75,7 @@
 
 ## 5. 契约变更的记录方式
 
-- 任何 L2 改动，都要在 `docs/contract-changelog.md` 追加一行：日期 / 版本 / 契约点 / 变更 / 理由 / 兼容性 / 受影响的守卫。
+- 任何 L2 改动，都要在 `docs/zh/dev/contract-changelog.md` 追加一行：日期 / 版本 / 契约点 / 变更 / 理由 / 兼容性 / 受影响的守卫。
 - 第 2 步会加入**契约快照守卫**：把门面 `__all__`+签名、描述符注册表、CLI 命令+退出码、账本 schema 落成生成物快照，代码与快照不一致即守卫红——**强制**每次契约变化都被显式记录，而不是靠自觉。
 - **快照守卫已落地**（2026-10-11）：`src/myastro/contract.py` 生成
   `docs/contract-snapshot.json`，`tests/guards/test_contract_snapshot.py` 逐字节比对；

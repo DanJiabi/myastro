@@ -61,7 +61,7 @@ def env_seeded(tmp_path, monkeypatch):
     teardown_env()
 
 # ── 层标记：按目录自动挂 unit/kernel/sources/facade/ui/guards ──
-# 用于快通道 `pytest -m "unit or guards"`（见 docs/testing.md §5）
+# 用于快通道 `pytest -m "unit or guards"`（见 docs/zh/dev/testing.md §5）
 LAYERS = ("unit", "kernel", "sources", "facade", "ui", "cli", "guards")
 
 

@@ -1,0 +1,83 @@
+# 文档站配置（mkdocs-material + mkdocs-static-i18n，folder 结构）
+#
+# 语言策略：中文是**默认且完整**的语言（开发文档只写中文）；英文侧只放面向外部读者的
+# 页面（首屏/安装/快速上手）。守卫保证"英文页必须在中文里有同名对应"，反向允许。
+site_name: myastro
+site_description: 带账本的个人天文数据工具箱 / Personal astronomy data toolkit with a ledger
+site_url: https://danjiabi.github.io/myastro/
+repo_url: https://github.com/DanJiabi/myastro
+repo_name: DanJiabi/myastro
+edit_uri: edit/main/docs/
+
+docs_dir: docs
+site_dir: site
+
+# 生成物不是散文：不进站点（它在仓库里供契约守卫比对）
+exclude_docs: |
+  contract-snapshot.json
+
+theme:
+  name: material
+  language: zh
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - search.suggest
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/weather-night
+        name: 切换深色
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/weather-sunny
+        name: 切换浅色
+
+plugins:
+  - search
+  - i18n:
+      docs_structure: folder
+      fallback_to_default: true
+      reconfigure_material: true
+      languages:
+        - locale: zh
+          default: true
+          name: 中文
+          nav:
+            - 首页: zh/index.md
+            - 安装: zh/install.md
+            - 快速上手: zh/quickstart.md
+            - 开发者文档:
+                - 能力地图: zh/dev/capabilities.md
+                - 处理逻辑: zh/dev/processing.md
+                - 插件 API: zh/dev/plugin-api.md
+                - io 设计: zh/dev/design-io.md
+                - TUI 设计: zh/dev/design-top.md
+                - 测试与守卫: zh/dev/testing.md
+                - 能力→测试地图: zh/dev/test-map.md
+                - 变更分级政策: zh/dev/change-policy.md
+                - 契约变更记录: zh/dev/contract-changelog.md
+                - 发布流程: zh/dev/release.md
+                - 开发计划: zh/dev/dev-plan.md
+                - 路线图 E: zh/dev/roadmap-e.md
+        - locale: en
+          name: English
+          nav:
+            - Home: en/index.md
+            - Install: en/install.md
+            - Quickstart: en/quickstart.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.superfences
+
+nav:
+  - 首页: zh/index.md

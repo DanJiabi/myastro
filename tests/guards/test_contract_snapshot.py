@@ -1,9 +1,9 @@
 """契约快照守卫：代码与 `docs/contract-snapshot.json` 必须一致。
 
 为什么需要：0.2.0 → 0.3.5 的复盘里，对外契约其实零漂移，但**我是用正则数引号字符串
-量出来的，数是错的**（详见 `docs/change-policy.md` §1.1）。手工统计（靠人、靠我）会错，
+量出来的，数是错的**（详见 `docs/zh/dev/change-policy.md` §1.1）。手工统计（靠人、靠我）会错，
 所以让机器守着：任何契约变化都必须显式重新生成快照并在
-`docs/contract-changelog.md` 里写一行理由。
+`docs/zh/dev/contract-changelog.md` 里写一行理由。
 
 本守卫**必须能红**——变异验证（三种，见提交信息）：
 ① 加一个门面导出；② 改一个 CLI 选项名；③ 在 `_MIGRATIONS` 加一个版本。
@@ -23,7 +23,7 @@ def test_contract_snapshot_is_current():
         + "\n".join(issues)
         + "\n\n若这是**有意的**契约变更：\n"
           "  1) 运行 `myastro contract-snapshot` 重新生成；\n"
-          "  2) 在 `docs/contract-changelog.md` 追加一行（契约点/变更/理由/兼容性）；\n"
+          "  2) 在 `docs/zh/dev/contract-changelog.md` 追加一行（契约点/变更/理由/兼容性）；\n"
           "否则请修正代码。"
     )
 

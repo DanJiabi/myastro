@@ -111,4 +111,4 @@ class TestProblems:
         assert f"facade_api.{missing}: 新增" in text
         assert "exit_codes.老错误: 删除" in text
         assert "registries.url_sources: 变化" in text
-        assert "docs/contract-changelog.md" in text          # 给出下一步动作
+        assert "docs/zh/dev/contract-changelog.md" in text          # 给出下一步动作

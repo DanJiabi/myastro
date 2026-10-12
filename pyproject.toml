@@ -1,6 +1,6 @@
 [project]
 name = "myastro"
-version = "0.4.2"
+version = "0.4.3"
 description = "Personal astronomy data toolkit: fetch, ledger, dedup, coverage, TUI"
 readme = "README.md"
 license = "MIT"
@@ -48,7 +48,9 @@ ztfquery = ["ztfquery"]
 # ztfquery 是 ztf-fields 索引构建的后端：本地索引/覆盖率相关测试需要它，
 # 故列进 test extra（对普通用户仍是可选的 [ztfquery]）
 test = ["pytest", "pytest-asyncio", "ruff", "pyflakes", "ztfquery"]
-dev = ["pytest", "pytest-asyncio", "ruff", "pyflakes", "jupyterlab"]   # notebook 另需 .[processing]
+dev = ["pytest", "pytest-asyncio", "ruff", "pyflakes", "jupyterlab",
+       "mkdocs-material", "mkdocs-static-i18n"]            # notebook 另需 .[processing]
+docs = ["mkdocs-material", "mkdocs-static-i18n"]
 
 [project.scripts]
 myastro = "myastro.cli:main"
@@ -64,7 +66,7 @@ packages = ["src/myastro"]
 # 发布产物的内容要**逐项有理由**，不靠"默认把仓库里所有东西都塞进去"。
 # 排除 notebooks 的理由：占 2.2MB（输出占 97–99%），且执行输出里含本机绝对路径
 # （实测 notebook 01 的 traceback 里有 /Users/... 路径）。示例页改在文档站发布，
-# 脱敏（清空输出）需要本人确认后进行，见 docs/release.md §3。
+# 脱敏（清空输出）需要本人确认后进行，见 docs/zh/dev/release.md §3。
 include = [
     "src/",
     "tests/",
@@ -88,7 +90,7 @@ exclude = [".vscode/", "notebooks/", "requirements-lock.txt", ".gitignore",
 testpaths = ["tests"]
 addopts = "--strict-markers"
 markers = [
-    "cap(id): 该测试证明的领域能力（id 见 docs/test-map.md，能力定义见 docs/capabilities.md）",
+    "cap(id): 该测试证明的领域能力（id 见 docs/zh/dev/test-map.md，能力定义见 docs/zh/dev/capabilities.md）",
     "unit: 纯逻辑层（无 db/网络/TUI）",
     "kernel: 内核层（真 sqlite，网络打桩）",
     "sources: 数据源契约层",

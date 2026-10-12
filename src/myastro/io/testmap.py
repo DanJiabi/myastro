@@ -1,4 +1,4 @@
-"""测试能力地图：能力 → 证明它的测试（生成 docs/test-map.md）。
+"""测试能力地图：能力 → 证明它的测试（生成 docs/zh/dev/test-map.md）。
 
 用途：把"能力声明"与"证据"机器化绑定——
 capabilities.md 声明能力处于 L?，test-map.md 列出证明它的测试，
@@ -14,9 +14,9 @@ from pathlib import Path
 
 # 相对路径在**运行期**挂到源码仓库根（见 core.source_root）；绝对路径原样使用
 # （测试用 monkeypatch 指到临时路径）。
-DOC = Path("docs/test-map.md")
+DOC = Path("docs/zh/dev/test-map.md")
 TESTS_DIR = Path("tests")
-CAP_FILE = Path("docs/capabilities.md")
+CAP_FILE = Path("docs/zh/dev/capabilities.md")
 
 
 def _resolve(path: Path) -> Path:

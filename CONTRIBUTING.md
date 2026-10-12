@@ -31,7 +31,7 @@ Layers (`tests/<layer>/`) mirror the architecture:
 | `guards` | static invariants | — |
 
 - Every test carries exactly one `@pytest.mark.cap("<capability id>")`; ids live in
-  `src/myastro/io/testmap.py` and are explained in `docs/capabilities.md`.
+  `src/myastro/io/testmap.py` and are explained in `docs/zh/dev/capabilities.md`.
 - **A regression test must be able to go red.** Break the fix on purpose, watch the
   test fail, then restore it. Tests that cannot fail are treated as bugs.
 - No pipes in CI or hooks (`pytest | tail` hides the exit code — we have been bitten).
@@ -41,9 +41,9 @@ Layers (`tests/<layer>/`) mirror the architecture:
 - `myastro contract-snapshot` regenerates `docs/contract-snapshot.json` (facade API, CLI
   commands and options, exit codes, ledger schema, registries). A guard fails on any
   drift and points at the exact leaf path; **every contract change must be regenerated
-  and recorded in `docs/contract-changelog.md`**.
-- `myastro test-map` regenerates `docs/test-map.md`; `myastro doc-sync` regenerates the
-  source matrix in `docs/design-io.md`. Guards fail when they are stale.
+  and recorded in `docs/zh/dev/contract-changelog.md`**.
+- `myastro test-map` regenerates `docs/zh/dev/test-map.md`; `myastro doc-sync` regenerates the
+  source matrix in `docs/zh/dev/design-io.md`. Guards fail when they are stale.
 - Adding a source means: `SOURCES` + a task in `TASKS` (or `URL_SOURCES`) + descriptor;
   drift between registries is guarded in `tests/guards/`.
 - User-facing docs are bilingual: `docs/en/<name>.md` and `docs/zh/<name>.md` must both
@@ -56,12 +56,12 @@ Layers (`tests/<layer>/`) mirror the architecture:
 Structural churn is the main source of regressions in this repo (measured: 67 of 163
 commits touched the structural core, and on the busiest repair day 6 of 7 structural
 commits were fixes). So decide the class **first** — full policy and rationale live in
-`docs/change-policy.md` (Chinese; this is the short version):
+`docs/zh/dev/change-policy.md` (Chinese; this is the short version):
 
 | Class | What | Budget | Process |
 |---|---|---|---|
 | **L1 local** | no observable contract change: a new source, a single-file fix, docs, tests | ≤3 files, ≤150 lines | just do it, run the gates |
-| **L2 contract** | facade `__all__`/signatures, descriptors, CLI commands/exit codes, ledger schema, registries, error taxonomy | ≤6 files, **one contract point** | design note first (blast radius + compatibility) → approval → implement; append a row to `docs/contract-changelog.md` |
+| **L2 contract** | facade `__all__`/signatures, descriptors, CLI commands/exit codes, ledger schema, registries, error taxonomy | ≤6 files, **one contract point** | design note first (blast radius + compatibility) → approval → implement; append a row to `docs/zh/dev/contract-changelog.md` |
 | **L3 structural** | layering, job lifecycle, locking/atomicity, TUI render core, file layout | 1 subsystem + 1 invariant | design first (invariants + failure-mode tests) → approval → **three commits**: guard/tests → implementation → migration; at most **one L3 per release**, then a freeze release |
 
 Hard rules that came out of real incidents:
@@ -79,7 +79,7 @@ When in doubt, treat it as L2.
 
 ## Rule 4 — third-party sources go through the plugin protocol
 
-`docs/plugin-api.md` defines plugin protocol v1: a plugin registers a **named task**
+`docs/zh/dev/plugin-api.md` defines plugin protocol v1: a plugin registers a **named task**
 (`myastro.register_task`) plus a `SourceDescriptor` (`myastro.register_source`). Registration
 validates eagerly and refuses to shadow built-ins. Two things matter for contributions here:
 
@@ -94,7 +94,7 @@ validates eagerly and refuses to shadow built-ins. Two things matter for contrib
   body explains **why** and cites evidence (measurements, failing tests).
 - Keep commits self-contained: each one should pass the full gate.
 - PRs: describe the problem, the approach, and how you verified it (commands + output).
-  If you touched a pipeline stage, update `docs/processing.md`.
+  If you touched a pipeline stage, update `docs/zh/dev/processing.md`.
 
 ## Reporting bugs
 

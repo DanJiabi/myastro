@@ -2,7 +2,7 @@
 
 > 状态：**批次 1 已落地**（注册契约 + 校验 + 测试）。发现机制（entry-points 自动加载）
 > 属批次 2，**尚未实现**——现在需要在插件包被导入时显式调用注册 API。
-> 契约变更记录见 `docs/contract-changelog.md`；变更流程见 `docs/change-policy.md`。
+> 契约变更记录见 `docs/zh/dev/contract-changelog.md`；变更流程见 `docs/zh/dev/change-policy.md`。
 
 ## 1. 目标
 

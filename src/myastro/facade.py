@@ -82,7 +82,7 @@ def register_source(descriptor: SourceDescriptor, *,
                     replace: bool = False) -> None:
     """插件协议 v1：注册第三方源（校验 → 冲突检查 → 写入）。
 
-    规则与示例见 `docs/plugin-api.md`；校验失败抛 `ParamError`（错误分类：参数），
+    规则与示例见 `docs/zh/dev/plugin-api.md`；校验失败抛 `ParamError`（错误分类：参数），
     且**不留部分状态**。内置源不可覆盖。
     """
     from .descriptors import register as _register

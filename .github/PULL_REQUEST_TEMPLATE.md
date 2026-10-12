@@ -14,5 +14,5 @@
 - [ ] `pytest -q` passes (full suite)
 - [ ] `ruff check src tests` and `pyflakes src tests` are clean
 - [ ] `myastro test-map --check` and `myastro doc-sync` are up to date
-- [ ] New/changed behaviour is documented (`docs/processing.md` for pipeline stages)
+- [ ] New/changed behaviour is documented (`docs/zh/dev/processing.md` for pipeline stages)
 - [ ] Regression tests verified to fail without the fix

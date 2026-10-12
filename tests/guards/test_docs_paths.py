@@ -17,7 +17,7 @@ import pytest
 DOCS = pathlib.Path("docs")
 ROOT = pathlib.Path(".")
 
-# 形如 src/myastro/io/search.py / tests/kernel/test_db.py / docs/testing.md
+# 形如 src/myastro/io/search.py / tests/kernel/test_db.py / docs/zh/dev/testing.md
 PATH_RE = re.compile(
     r"(?:src/myastro|tests|docs|githooks)/[A-Za-z0-9_./*-]+?\.(?:py|md|sh)")
 # 允许通配（`tests/sources/test_*.py`）与目录占位，逐个展开检查
@@ -26,7 +26,7 @@ PLAIN_RE = re.compile(r"githooks/[A-Za-z0-9_.-]+")
 
 def _documented_paths() -> list[tuple[str, str]]:
     out = []
-    for doc in sorted(DOCS.glob("*.md")):
+    for doc in sorted(DOCS.rglob("*.md")):   # 开发文档已移入 docs/zh/dev/
         for m in PATH_RE.finditer(doc.read_text()):
             out.append((doc.name, m.group(0)))
         for m in PLAIN_RE.finditer(doc.read_text()):
@@ -50,15 +50,15 @@ def test_documented_paths_exist():
 def test_processing_doc_is_linked_from_readme_and_io_design():
     """处理逻辑文档必须从 README 与 io 设计文档可达（否则等于没写）。"""
     readme = pathlib.Path("README.md").read_text()
-    io_design = (DOCS / "design-io.md").read_text()
-    assert "docs/processing.md" in readme, "README 未链接 processing.md"
+    io_design = (DOCS / "zh" / "dev" / "design-io.md").read_text()
+    assert "docs/zh/dev/processing.md" in readme, "README 未链接 processing.md"
     assert "processing.md" in io_design, "design-io 未链接 processing.md"
 
 
 @pytest.mark.cap("design.guards")
 def test_processing_doc_covers_core_modules():
     """处理逻辑文档的"代码位置速查"必须覆盖 io 层核心处理模块。"""
-    text = (DOCS / "processing.md").read_text()
+    text = (DOCS / "zh" / "dev" / "processing.md").read_text()
     core = ["descriptors.py", "io/jobs/", "io/db.py", "io/coords.py",
             "io/index.py", "io/search.py", "io/integrity.py", "io/health.py",
             "io/schedule.py", "facade.py"]
@@ -70,23 +70,28 @@ def test_processing_doc_covers_core_modules():
 def test_bilingual_user_docs_are_paired():
     """用户向文档必须中英成对，且章节结构一致（防止只更新一边）。
 
-    约定（docs/release.md §6）：`docs/en/<name>.md` 与 `docs/zh/<name>.md`
+    约定（docs/zh/dev/release.md §6）：`docs/en/<name>.md` 与 `docs/zh/<name>.md`
     同名成对；章节层级序列必须相同，否则说明有人只改了一边。
     """
     import re
 
-    en = sorted((DOCS / "en").glob("*.md"))
-    zh = sorted((DOCS / "zh").glob("*.md"))
+    def rel(tree: str) -> set[pathlib.Path]:
+        return {p.relative_to(DOCS / tree) for p in (DOCS / tree).rglob("*.md")}
+
+    en, zh = rel("en"), rel("zh")
     assert en, "docs/en 下没有用户向文档"
-    assert [p.name for p in en] == [p.name for p in zh], (
-        f"中英文档不成对：en={[p.name for p in en]} zh={[p.name for p in zh]}")
+    # 规则：**英文页必须在中文里有同名对应**（英文是给外部读者的，不能留孤儿页）；
+    # 反过来允许——中文侧多出只面向开发者的文档（docs/zh/dev/**）。
+    orphan = sorted(en - zh)
+    assert not orphan, f"英文文档缺少中文对应：{[str(p) for p in orphan]}"
 
     def levels(path):
         return [len(m.group(1)) for m in
                 re.finditer(r"(?m)^(#{1,6})\s", path.read_text())]
 
-    mismatch = [(p.name, levels(p), levels(DOCS / "zh" / p.name))
-                for p in en if levels(p) != levels(DOCS / "zh" / p.name)]
+    mismatch = [(str(p), levels(DOCS / "en" / p), levels(DOCS / "zh" / p))
+                for p in sorted(en & zh)
+                if levels(DOCS / "en" / p) != levels(DOCS / "zh" / p)]
     assert not mismatch, f"中文章节结构与英文不一致：{mismatch}"
 
 

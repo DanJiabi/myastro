@@ -14,7 +14,7 @@ END = "<!-- END sources-matrix -->"
 # 相对路径在运行期挂到源码仓库根（见 core.source_root）。
 # 此前这里是 `Path(__file__).resolve().parents[3]`——在已安装的 wheel 里
 # parents[3] 落在 venv 的 lib 目录，会把文档**写进 site-packages**。
-DOC = Path("docs/design-io.md")
+DOC = Path("docs/zh/dev/design-io.md")
 
 
 def doc_path(path: Path | None = None) -> Path:

@@ -124,24 +124,26 @@ Exit codes are a contract, so scripts can branch:
   bounding box plus haversine refinement and sorted by separation.
 - **Local indexes** — 366k Legacy bricks and 1776 ZTF fields, cached in memory and
   searched with binary search (sub-millisecond per keystroke in the TUI).
-- **Verifiability** — a capability matrix (`docs/capabilities.md`), a generated test
-  map (`docs/test-map.md`) and design guards: tests fail when docs or registries drift.
+- **Verifiability** — a capability matrix (`docs/zh/dev/capabilities.md`), a generated test
+  map (`docs/zh/dev/test-map.md`) and design guards: tests fail when docs or registries drift.
 
 ## Documentation
 
-Extending myastro with your own data source: `docs/plugin-api.md` (plugin protocol v1) plus a runnable reference package in `examples/myastro-source-example/`.
+**Documentation site:** <https://danjiabi.github.io/myastro/> (Chinese is the complete language; English covers home/install/quickstart).
 
-Contributor-facing process docs (Chinese): `docs/change-policy.md` (change classes, granularity limits) and `docs/contract-changelog.md` (every change to the public contract).
+Extending myastro with your own data source: `docs/zh/dev/plugin-api.md` (plugin protocol v1) plus a runnable reference package in `examples/myastro-source-example/`.
+
+Contributor-facing process docs (Chinese): `docs/zh/dev/change-policy.md` (change classes, granularity limits) and `docs/zh/dev/contract-changelog.md` (every change to the public contract).
 
 | Document | Language | Audience |
 |---|---|---|
 | [Install](docs/en/install.md) · [Quick start](docs/en/quickstart.md) | EN | users |
 | [安装](docs/zh/install.md) · [快速上手](docs/zh/quickstart.md) | 中文 | 用户 |
-| [capabilities.md](docs/capabilities.md) | 中文 | roadmap: what exists, at which maturity |
-| [processing.md](docs/processing.md) | 中文 | pipeline behaviour and failure semantics |
-| [design-io.md](docs/design-io.md) · [design-top.md](docs/design-top.md) | 中文 | layer design and decisions |
-| [testing.md](docs/testing.md) · [test-map.md](docs/test-map.md) | 中文 | test layers, guards, generated map |
-| [release.md](docs/release.md) | 中文 | release process and public-mirror model |
+| [capabilities.md](docs/zh/dev/capabilities.md) | 中文 | roadmap: what exists, at which maturity |
+| [processing.md](docs/zh/dev/processing.md) | 中文 | pipeline behaviour and failure semantics |
+| [design-io.md](docs/zh/dev/design-io.md) · [design-top.md](docs/zh/dev/design-top.md) | 中文 | layer design and decisions |
+| [testing.md](docs/zh/dev/testing.md) · [test-map.md](docs/zh/dev/test-map.md) | 中文 | test layers, guards, generated map |
+| [release.md](docs/zh/dev/release.md) | 中文 | release process and public-mirror model |
 
 Developer docs are maintained in Chinese; user-facing docs are bilingual.
 

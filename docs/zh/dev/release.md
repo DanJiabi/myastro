@@ -29,7 +29,7 @@
 | 位置 | 内容 | 处理 |
 |---|---|---|
 | `README.md` | 私有远端地址（自建 Gitea + 内网穿透域名） | 已删除，改为公开仓库地址 |
-| `docs/testing.md` | 本机 conda 环境路径 | 已改为通用说明（环境变量 / 当前 venv） |
+| `docs/zh/dev/testing.md` | 本机 conda 环境路径 | 已改为通用说明（环境变量 / 当前 venv） |
 | `src/myastro/io/config.py` | 默认数据根曾是本机个人布局 | 已改为 `~/myastro-data`；`doctor` 在未显式设置 `MYASTRO_DATA` 时提示 |
 | `githooks/pre-push` | 解释器探测曾含本机 conda 路径 | 已改为 `MYASTRO_ENV_BIN` → 当前 venv → PATH |
 | git 历史 | 作者 `danjiabi <danjiabi@local>`、可能含 NAS 路径 | 决定：全量历史推送（透明）还是新仓 squash（干净）；见 §9 待定项 |
@@ -57,10 +57,22 @@
 |---|---|---|
 | test | ubuntu-latest, macos-latest × py3.11/3.12/3.13 | `ruff check`、`pyflakes`、`pytest`（全量，离线） |
 | build | ubuntu-latest | `python -m build` + `twine check` + 装 wheel 冒烟 + 上传 artifact |
-| docs | ubuntu-latest | 生成物一致性（`test-map` / `doc-sync` 守卫已覆盖）+ 文档站构建 |
+| docs | ubuntu-latest | `mkdocs build --strict` → 发布 GitHub Pages（见 §5.1） |
 | release | tag 触发 | Trusted Publishing 上传 PyPI；生成 GitHub Release（CHANGELOG 段落） |
 
 本地 `githooks/pre-push` 保留为"提交前全量门"（离线可用），但**不再是唯一门禁**。
+
+### 5.1 文档站（GitHub Pages）
+
+- 配置：`mkdocs.yml`（material 主题 + `mkdocs-static-i18n`，folder 结构）。
+  **语言策略**：中文是默认且完整的语言（开发文档只写中文）；英文侧只放面向外部读者的
+  页面（首屏/安装/快速上手），各自独立 nav。
+- 站点：<https://danjiabi.github.io/myastro/>（Pages 的 Build and deployment 设为
+  GitHub Actions；工作流 `.github/workflows/docs.yml`）。
+- 触发：push 到 main 且改动 `docs/**` / `mkdocs.yml` / 该工作流，或手动 `workflow_dispatch`。
+- **`--strict` 是硬要求**：警告（含相对链接写错、页面未在 nav 中）会让构建失败。
+  本地先跑一遍再推：`pip install -e ".[docs]" && mkdocs build --strict`。
+- 生成物 `docs/contract-snapshot.json` 用 `exclude_docs` 排除（机检产物不是散文）。
 
 ## 6. 双语文档结构
 
@@ -72,7 +84,7 @@ docs/                （用户向，双语）
   zh/{...同一组...}
 docs/dev/            （设计/决策，中文 + 英文摘要）
   processing.md design-io.md design-top.md testing.md roadmap-e.md dev-plan.md
-docs/test-map.md     生成物（保持中文，属于开发者文档）
+docs/zh/dev/test-map.md     生成物（保持中文，属于开发者文档）
 ```
 
 - 用户向文档必须**成对存在**，加守卫：`docs/en/<name>.md` 与 `docs/zh/<name>.md` 同名成对、章节结构一致（防止单边更新）。注意：计划中的路径要写成 `<name>` 这类模式，否则会被 `tests/guards/test_docs_paths.py` 判为"引用了不存在的文件"——这份草案就被抓过一次。

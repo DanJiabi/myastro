@@ -61,6 +61,10 @@ capabilities.md 里以 `<!-- cap:id -->` 标注。`myastro test-map` 生成
 5. test-map.md 必须与生成器逐字一致（手改即红）
 6. contract-snapshot.json 必须与生成器逐字一致，且与代码一致——契约漂移即红
    （差异定位到叶子路径，见 `tests/guards/test_contract_snapshot.py`）
+7. 文档路径守卫递归扫 `docs/**/*.md`；**双语配对规则**：`docs/en/**` 里每一页必须在
+   `docs/zh/**` 有同名对应（英文面向外部读者，不能留孤儿页），反向允许——中文侧可以多出
+   只给开发者看的 `docs/zh/dev/**`；配对页的**章节层级序列必须一致**（防只改一边）
+8. 文档站必须能 `mkdocs build --strict` 通过（警告即失败；相对链接写错会被它抓住）
 
 ## 3. 新增能力的标准顺序
 

@@ -35,6 +35,8 @@ myastro doctor                           # 自检：依赖、路径、账本、�
 ```
 
 需要 Python ≥ 3.11；支持 macOS 与 Linux（Windows 未测试，定时任务仅 macOS/Linux）。
+**文档站：** <https://danjiabi.github.io/myastro/>（中文为完整语言，英文含首屏/安装/快速上手）
+
 可选 extras：`[processing]`、`[ztfquery]`、`[asassn]`。
 
 > ⚠️ `[asassn]` 目前**无法正常安装**：`pyasassn` 0.6.4 把 `pyarrow==4.0.1`（2022 年）
@@ -115,7 +117,7 @@ myastro top                                # TUI
 - **精确圆锥检索**：坐标在入库时解析（params → meta → 索引查询 → 文件名兜底）并落库，
   查询走包围盒 + haversine 精判，按角距排序。
 - **本地索引**：36.6 万 Legacy brick、1776 个 ZTF 场；进程内缓存 + 二分查询（TUI 每键 <1ms）。
-- **可验证性**：能力矩阵（`docs/capabilities.md`）、生成的测试地图（`docs/test-map.md`）与设计守卫——
+- **可验证性**：能力矩阵（`docs/zh/dev/capabilities.md`）、生成的测试地图（`docs/zh/dev/test-map.md`）与设计守卫——
   文档或注册表漂移会让测试变红。
 
 ## 文档
@@ -124,11 +126,11 @@ myastro top                                # TUI
 |---|---|---|
 | [Install](docs/en/install.md) · [Quick start](docs/en/quickstart.md) | EN | users |
 | [安装](docs/zh/install.md) · [快速上手](docs/zh/quickstart.md) | 中文 | 用户 |
-| [capabilities.md](docs/capabilities.md) | 中文 | 能力清单与成熟度（最高规划文档） |
-| [processing.md](docs/processing.md) | 中文 | 各处理阶段的规则与失败语义 |
-| [design-io.md](docs/design-io.md) · [design-top.md](docs/design-top.md) | 中文 | 分层设计与决策 |
-| [testing.md](docs/testing.md) · [test-map.md](docs/test-map.md) | 中文 | 测试分层、守卫、生成地图 |
-| [release.md](docs/release.md) | 中文 | 发布流程与公开镜像模型 |
+| [capabilities.md](docs/zh/dev/capabilities.md) | 中文 | 能力清单与成熟度（最高规划文档） |
+| [processing.md](docs/zh/dev/processing.md) | 中文 | 各处理阶段的规则与失败语义 |
+| [design-io.md](docs/zh/dev/design-io.md) · [design-top.md](docs/zh/dev/design-top.md) | 中文 | 分层设计与决策 |
+| [testing.md](docs/zh/dev/testing.md) · [test-map.md](docs/zh/dev/test-map.md) | 中文 | 测试分层、守卫、生成地图 |
+| [release.md](docs/zh/dev/release.md) | 中文 | 发布流程与公开镜像模型 |
 
 用户向文档双语；开发者文档以中文维护。
 

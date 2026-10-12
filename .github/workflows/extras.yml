@@ -31,7 +31,7 @@ jobs:
           /tmp/v/bin/python -c "import myastro; print('myastro', myastro.__version__)"
   asassn-upstream-watch:
     # "保留现状"不能变成"没人再看"。每周探一次 v2 端点：
-    # 只要它恢复可达，这个 job 就红——提醒按 docs/capabilities.md 的规则做真实验证，
+    # 只要它恢复可达，这个 job 就红——提醒按 docs/zh/dev/capabilities.md 的规则做真实验证，
     # 而不是让休眠源悄悄躺着。服务仍下线时它是绿的（不产生噪音）。
     runs-on: ubuntu-latest
     steps:

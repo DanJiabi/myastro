@@ -3,12 +3,38 @@
 本文件记录对使用者有影响的变更。格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [0.4.3] - 2026-10-12
+
+### 新增
+
+- **双语文档站**：<https://danjiabi.github.io/myastro/>（mkdocs-material +
+  `mkdocs-static-i18n`，GitHub Pages）。**中文是默认且完整的语言**（开发文档只写中文）；
+  英文侧放面向外部读者的页面（首屏/安装/快速上手），各自独立导航。
+  站点由 `.github/workflows/docs.yml` 在 `docs/**` 或配置变更时构建发布，
+  **构建用 `--strict`**（警告即失败——相对链接写错这类问题会被直接抓住）。
+- `[docs]` extra（mkdocs-material + mkdocs-static-i18n），并已并入 `[dev]`；
+  本地预览：`pip install -e ".[docs]" && mkdocs serve`。
+
+### 变更
+
+- **文档树重构**：中文开发文档从 `docs/*.md` 移入 `docs/zh/dev/`；用户向文档
+  仍在 `docs/{en,zh}/`；生成物 `docs/contract-snapshot.json` 留在 `docs/` 根并被站点排除。
+  全仓引用（README/CONTRIBUTING/CHANGELOG/模板/CI/源码注释，共 34 个文件）已同步。
+- **双语配对守卫规则升级**：`docs/en/**` 里每一页必须在 `docs/zh/**` 有同名对应
+  （英文页不能是孤儿），反向允许——中文侧可以多出只给开发者看的 `docs/zh/dev/**`；
+  配对页的章节层级序列仍必须一致。
+
+### 说明（你需要做什么）
+
+- 旧链接若指向 `docs/<某个开发文档>.md`，现在应改为 `docs/zh/dev/<同名>`（对外入口
+  用文档站更省事）。安装方式与代码接口无变化。
+
 ## [0.4.2] - 2026-10-12
 
 ### 新增
 
 - **可运行的示例插件** `examples/myastro-source-example/`（`demo` 源：离线合成光变）：
-  `docs/plugin-api.md` 里那段示例的完整可安装版本，演示协议 v1 的全部要点。
+  `docs/zh/dev/plugin-api.md` 里那段示例的完整可安装版本，演示协议 v1 的全部要点。
   随 sdist 发布，读源码包的人可离线看到。CI 会安装它并真取一次。
 - **处理层正式公开**：`lc` 纳入门面 `__all__`（37 → 38）。此前它是"事实公开
   但名义未导出"（`from myastro import lc` 一直可用）。
@@ -31,7 +57,7 @@
 
 ### 修复
 
-- **插件作者必需的三个名字没有公开**（0.4.0 实测缺陷）：按 `docs/plugin-api.md` 写的插件
+- **插件作者必需的三个名字没有公开**（0.4.0 实测缺陷）：按 `docs/zh/dev/plugin-api.md` 写的插件
   在**已安装的 wheel** 上直接失败 `module 'myastro' has no attribute 'write_parquet'`。
   插件协议要求任务返回 `FetchResult`、接收 `RunContext`、并用统一落盘
   （`write_parquet` 内含原子替换与 pyarrow 线程规避），但这三者当时都藏在
@@ -42,7 +68,7 @@
 ### 测试
 
 - `test_plugin_doc_example_uses_public_api_only`：**把文档变成可执行契约**——解析
-  `docs/plugin-api.md` 里出现的每个 `ma.<名>`，断言都在 `__all__` 内，并禁止示例代码
+  `docs/zh/dev/plugin-api.md` 里出现的每个 `ma.<名>`，断言都在 `__all__` 内，并禁止示例代码
   导入 `myastro.io.*`（变异验证：把文档改成引用私有名即红）。
 - 插件端到端测试改用**纯公开 API**（此前用内部导入，因此本地全绿却漏掉了这个缺陷）。
 
@@ -50,7 +76,7 @@
 
 ### 新增
 
-- **插件协议 v1（`docs/plugin-api.md`）**：第三方不改内核即可加数据源。
+- **插件协议 v1（`docs/zh/dev/plugin-api.md`）**：第三方不改内核即可加数据源。
   - `myastro.register_task(name, fn, *, replace=False)`：任务**按名注册**（`JobSpec` 只存名字，
     重试与跨进程恢复依赖它）；内置任务不可覆盖。
   - `myastro.register_source(descriptor, *, replace=False)`：注册源描述符；内置源不可覆盖。
@@ -62,15 +88,15 @@
     requires 与 probe_url 合法性）；失败抛 `ParamError`（退出码 2）且不留部分状态。
 - **契约快照与守卫**：`docs/contract-snapshot.json`（门面 API/CLI 命令与选项/退出码/
   账本 schema/注册表）+ `myastro contract-snapshot [--check]`。任何契约变化都会让
-  `pytest` 变红并把差异**定位到叶子路径**，迫使变化被显式记录在 `docs/contract-changelog.md`。
+  `pytest` 变红并把差异**定位到叶子路径**，迫使变化被显式记录在 `docs/zh/dev/contract-changelog.md`。
   守卫**只绑内置源与内置任务**：装了第三方插件后本体守卫仍然全绿。
 
 ### 文档
 
-- `docs/change-policy.md`：变更分级（L1 局部 / L2 契约 / L3 结构）、颗粒度上限、
+- `docs/zh/dev/change-policy.md`：变更分级（L1 局部 / L2 契约 / L3 结构）、颗粒度上限、
   四条硬约束（一次提交一个意图、机械改写须附等价性证明、跨切面语义须有能变红的回归测试、
   改用户环境行为须写"你需要做什么"），以及文件预算的计法（生成物与簿记不计入）。
-- `docs/contract-changelog.md`：契约变更记录 + 0.1→0.3.5 回溯基线
+- `docs/zh/dev/contract-changelog.md`：契约变更记录 + 0.1→0.3.5 回溯基线
   （AST 实测：门面 33 项、facade 27 个函数、CLI 24 个子命令、`EXIT_CODES` 4 项、
   账本 schema v1–v8，**自 0.2.0 起零漂移**）。
 - `CONTRIBUTING.md` 新增 Rule 3（变更分级）与 Rule 4（插件协议）。
@@ -79,7 +105,7 @@
 
 - **既有用户无需改动**：`register_source(d)` 的旧调用方式仍然可用，内置源行为与签名不变。
 - **贡献者**：改动对外契约时，需要 `myastro contract-snapshot` 重新生成快照，
-  并在 `docs/contract-changelog.md` 追加一行——否则 `pytest` 会红（这是刻意的）。
+  并在 `docs/zh/dev/contract-changelog.md` 追加一行——否则 `pytest` 会红（这是刻意的）。
 
 ## [0.3.5] - 2026-10-11
 
@@ -139,13 +165,13 @@
 - 中英 README 与 `docs/{en,zh}/install.md` 明确写出：`[asassn]` 目前**无法正常安装**
   （上游钉子）与其替代命令；ASAS-SN Sky Patrol v2 端点自 2026-10 拒连
   （`asassn-lb01.ifa.hawaii.edu:9006`），该源在上游恢复前不可用。
-- `docs/capabilities.md` 的"休眠源处置"补上三条实测结论。
+- `docs/zh/dev/capabilities.md` 的"休眠源处置"补上三条实测结论。
 
 ### 决策记录
 
 - **ASAS-SN 源：保留现状**（2026-10-11）。理由：实现与测试是资产，上游服务迁移
   不等于功能作废；删掉再恢复的成本更高。配套三个**复查触发条件**（写进
-  `docs/capabilities.md`）：① 每周 CI 探到 v2 端点恢复可达会自动红并提示做真实验证；
+  `docs/zh/dev/capabilities.md`）：① 每周 CI 探到 v2 端点恢复可达会自动红并提示做真实验证；
   ② 上游发布解除 pyarrow 钉子的新 `pyasassn` → 纳入必须通过的 extras 矩阵；
   ③ 是否迁移到新版 API 在 0.4.0 之后再评估（优先级低于插件契约）。
   "保留现状"不等于"没人再看"——`asassn-upstream-watch` 就是那个闹钟。
@@ -313,3 +339,4 @@
 [0.4.0]: https://github.com/DanJiabi/myastro/releases/tag/v0.4.0
 [0.4.1]: https://github.com/DanJiabi/myastro/releases/tag/v0.4.1
 [0.4.2]: https://github.com/DanJiabi/myastro/releases/tag/v0.4.2
+[0.4.3]: https://github.com/DanJiabi/myastro/releases/tag/v0.4.3

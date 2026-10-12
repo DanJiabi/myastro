@@ -17,4 +17,4 @@ body:
     attributes:
       value: >
         New data sources are welcome: they are a registry entry plus a download
-        function. See `CONTRIBUTING.md` and `docs/capabilities.md`.
+        function. See `CONTRIBUTING.md` and `docs/zh/dev/capabilities.md`.

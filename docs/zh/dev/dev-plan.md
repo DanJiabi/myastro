@@ -4,7 +4,7 @@
 > 现行规划见 [capabilities.md](capabilities.md)（能力清单，最高文档）与
 > [roadmap-e.md](roadmap-e.md)（E 系列）。
 
-版本：1.0｜依据：docs/design-io.md（v1.0 定稿）
+版本：1.0｜依据：docs/zh/dev/design-io.md（v1.0 定稿）
 
 ## 里程碑
 
