@@ -1,0 +1,980 @@
+{
+  "cli": {
+    "commands": {
+      "audit": [
+        "--help",
+        "-h"
+      ],
+      "backup": [
+        "--help",
+        "--out",
+        "--with-index",
+        "-h"
+      ],
+      "contract-snapshot": [
+        "--check",
+        "--help",
+        "-h"
+      ],
+      "coverage": [
+        "--help",
+        "-h"
+      ],
+      "delete": [
+        "--help",
+        "-h"
+      ],
+      "doc-sync": [
+        "--help",
+        "-h"
+      ],
+      "doctor": [
+        "--help",
+        "-h"
+      ],
+      "fetch": [
+        "--help",
+        "-h"
+      ],
+      "fetch gaia": [
+        "--dec",
+        "--help",
+        "--ra",
+        "--radius-deg",
+        "-h"
+      ],
+      "fetch legacy": [
+        "--brick",
+        "--help",
+        "-h"
+      ],
+      "fetch mpc": [
+        "--help",
+        "--number",
+        "--step-days",
+        "--target",
+        "-h"
+      ],
+      "fetch simbad": [
+        "--dec",
+        "--help",
+        "--ra",
+        "--radius-deg",
+        "-h"
+      ],
+      "fetch tess": [
+        "--cadence",
+        "--help",
+        "--sector",
+        "--target",
+        "-h"
+      ],
+      "fetch unwise": [
+        "--band",
+        "--dec",
+        "--help",
+        "--ra",
+        "--size",
+        "-h"
+      ],
+      "fetch vizier": [
+        "--catalog",
+        "--dec",
+        "--help",
+        "--ra",
+        "--radius-deg",
+        "-h"
+      ],
+      "fetch ztf": [
+        "--ccdid",
+        "--ffd",
+        "--field",
+        "--filtercode",
+        "--help",
+        "--qid",
+        "-h"
+      ],
+      "fetch ztf-lc": [
+        "--dec",
+        "--help",
+        "--ra",
+        "--radius-arcsec",
+        "-h"
+      ],
+      "fetch ztf-meta": [
+        "--ccdid",
+        "--field",
+        "--filtercode",
+        "--help",
+        "--jd-max",
+        "--jd-min",
+        "--qid",
+        "-h"
+      ],
+      "health": [
+        "--help",
+        "-h"
+      ],
+      "index": [
+        "--help",
+        "-h"
+      ],
+      "index list": [
+        "--help",
+        "-h"
+      ],
+      "index update": [
+        "--help",
+        "-h"
+      ],
+      "init": [
+        "--help",
+        "-h"
+      ],
+      "jobs": [
+        "--help",
+        "-h"
+      ],
+      "orphans": [
+        "--help",
+        "-h"
+      ],
+      "restore": [
+        "--force",
+        "--help",
+        "-h"
+      ],
+      "retry": [
+        "--help",
+        "-h"
+      ],
+      "retry-batch": [
+        "--help",
+        "-h"
+      ],
+      "schedule": [
+        "--help",
+        "-h"
+      ],
+      "schedule install": [
+        "--help",
+        "-h"
+      ],
+      "schedule list": [
+        "--help",
+        "-h"
+      ],
+      "schedule remove": [
+        "--help",
+        "-h"
+      ],
+      "search": [
+        "--help",
+        "--name",
+        "--near",
+        "--radius",
+        "--since",
+        "--source",
+        "--target",
+        "--until",
+        "-h"
+      ],
+      "test-map": [
+        "--check",
+        "--help",
+        "-h"
+      ],
+      "top": [
+        "--help",
+        "-h"
+      ],
+      "wait": [
+        "--help",
+        "-h"
+      ]
+    }
+  },
+  "exit_codes": {
+    "NetworkError": 4,
+    "NotFoundError": 3,
+    "ParamError": 2,
+    "StateError": 5
+  },
+  "facade_api": {
+    "FieldSpec": {
+      "kind": "type",
+      "params": {
+        "choices": [
+          "POSITIONAL_OR_KEYWORD",
+          "None",
+          "tuple[str, ...] | None"
+        ],
+        "default": [
+          "POSITIONAL_OR_KEYWORD",
+          "None",
+          "Any"
+        ],
+        "index": [
+          "POSITIONAL_OR_KEYWORD",
+          "None",
+          "str | None"
+        ],
+        "label": [
+          "POSITIONAL_OR_KEYWORD",
+          "''",
+          "str"
+        ],
+        "name": [
+          "POSITIONAL_OR_KEYWORD",
+          null,
+          "str"
+        ],
+        "name_like": [
+          "POSITIONAL_OR_KEYWORD",
+          "False",
+          "bool"
+        ],
+        "optional": [
+          "POSITIONAL_OR_KEYWORD",
+          "False",
+          "bool"
+        ],
+        "pattern": [
+          "POSITIONAL_OR_KEYWORD",
+          "None",
+          "str | None"
+        ],
+        "type": [
+          "POSITIONAL_OR_KEYWORD",
+          "<class 'str'>",
+          "type"
+        ]
+      }
+    },
+    "NetworkError": {
+      "kind": "type",
+      "params": {
+        "args": [
+          "VAR_POSITIONAL",
+          null,
+          ""
+        ],
+        "kwargs": [
+          "VAR_KEYWORD",
+          null,
+          ""
+        ]
+      }
+    },
+    "NotFoundError": {
+      "kind": "type",
+      "params": {
+        "args": [
+          "VAR_POSITIONAL",
+          null,
+          ""
+        ],
+        "kwargs": [
+          "VAR_KEYWORD",
+          null,
+          ""
+        ]
+      }
+    },
+    "ParamError": {
+      "kind": "type",
+      "params": {
+        "args": [
+          "VAR_POSITIONAL",
+          null,
+          ""
+        ],
+        "kwargs": [
+          "VAR_KEYWORD",
+          null,
+          ""
+        ]
+      }
+    },
+    "SCHEMA_VERSION": {
+      "kind": "int"
+    },
+    "SourceDescriptor": {
+      "kind": "type",
+      "params": {
+        "api_version": [
+          "POSITIONAL_OR_KEYWORD",
+          "1",
+          "int"
+        ],
+        "desc": [
+          "POSITIONAL_OR_KEYWORD",
+          null,
+          "str"
+        ],
+        "example_params": [
+          "POSITIONAL_OR_KEYWORD",
+          "<factory>",
+          "dict"
+        ],
+        "fields": [
+          "POSITIONAL_OR_KEYWORD",
+          "<factory>",
+          "list[FieldSpec]"
+        ],
+        "install_hint": [
+          "POSITIONAL_OR_KEYWORD",
+          "''",
+          "str"
+        ],
+        "name": [
+          "POSITIONAL_OR_KEYWORD",
+          null,
+          "str"
+        ],
+        "probe_url": [
+          "POSITIONAL_OR_KEYWORD",
+          "None",
+          "str | None"
+        ],
+        "product": [
+          "POSITIONAL_OR_KEYWORD",
+          null,
+          "str"
+        ],
+        "requires": [
+          "POSITIONAL_OR_KEYWORD",
+          "<factory>",
+          "list[str]"
+        ],
+        "status": [
+          "POSITIONAL_OR_KEYWORD",
+          null,
+          "str"
+        ],
+        "task": [
+          "POSITIONAL_OR_KEYWORD",
+          "None",
+          "str | None"
+        ],
+        "url_key": [
+          "POSITIONAL_OR_KEYWORD",
+          "None",
+          "str | None"
+        ]
+      }
+    },
+    "StateError": {
+      "kind": "type",
+      "params": {
+        "args": [
+          "VAR_POSITIONAL",
+          null,
+          ""
+        ],
+        "kwargs": [
+          "VAR_KEYWORD",
+          null,
+          ""
+        ]
+      }
+    },
+    "__version__": {
+      "kind": "str"
+    },
+    "audit": {
+      "kind": "function",
+      "params": {}
+    },
+    "backup": {
+      "kind": "function",
+      "params": {
+        "out_dir": [
+          "POSITIONAL_OR_KEYWORD",
+          "None",
+          ""
+        ],
+        "with_index": [
+          "KEYWORD_ONLY",
+          "False",
+          "bool"
+        ]
+      }
+    },
+    "batch": {
+      "kind": "function",
+      "params": {
+        "param_rows": [
+          "POSITIONAL_OR_KEYWORD",
+          null,
+          "list[dict[str, Any]]"
+        ],
+        "source": [
+          "POSITIONAL_OR_KEYWORD",
+          null,
+          "str"
+        ]
+      }
+    },
+    "coverage": {
+      "kind": "function",
+      "params": {
+        "index_name": [
+          "POSITIONAL_OR_KEYWORD",
+          null,
+          "str"
+        ]
+      }
+    },
+    "delete": {
+      "kind": "function",
+      "params": {
+        "job_ids": [
+          "POSITIONAL_OR_KEYWORD",
+          null,
+          "list[int]"
+        ]
+      }
+    },
+    "describe": {
+      "kind": "function",
+      "params": {
+        "source": [
+          "POSITIONAL_OR_KEYWORD",
+          null,
+          "str"
+        ]
+      }
+    },
+    "doctor": {
+      "kind": "function",
+      "params": {}
+    },
+    "fetch": {
+      "kind": "function",
+      "params": {
+        "params": [
+          "VAR_KEYWORD",
+          null,
+          ""
+        ],
+        "source": [
+          "POSITIONAL_ONLY",
+          null,
+          "str"
+        ]
+      }
+    },
+    "health": {
+      "kind": "function",
+      "params": {
+        "source": [
+          "POSITIONAL_OR_KEYWORD",
+          "None",
+          "str | None"
+        ]
+      }
+    },
+    "index_list": {
+      "kind": "function",
+      "params": {}
+    },
+    "index_search": {
+      "kind": "function",
+      "params": {
+        "limit": [
+          "POSITIONAL_OR_KEYWORD",
+          "8",
+          "int"
+        ],
+        "name": [
+          "POSITIONAL_OR_KEYWORD",
+          null,
+          "str"
+        ],
+        "prefix": [
+          "POSITIONAL_OR_KEYWORD",
+          null,
+          "str"
+        ]
+      }
+    },
+    "index_update": {
+      "kind": "function",
+      "params": {
+        "name": [
+          "POSITIONAL_OR_KEYWORD",
+          null,
+          "str"
+        ]
+      }
+    },
+    "init_root": {
+      "kind": "function",
+      "params": {}
+    },
+    "prefill": {
+      "kind": "function",
+      "params": {
+        "job_id": [
+          "POSITIONAL_OR_KEYWORD",
+          null,
+          "int"
+        ]
+      }
+    },
+    "query": {
+      "kind": "function",
+      "params": {
+        "params": [
+          "VAR_KEYWORD",
+          null,
+          ""
+        ],
+        "source": [
+          "POSITIONAL_ONLY",
+          null,
+          "str"
+        ]
+      }
+    },
+    "register_source": {
+      "kind": "function",
+      "params": {
+        "descriptor": [
+          "POSITIONAL_OR_KEYWORD",
+          null,
+          "SourceDescriptor"
+        ],
+        "replace": [
+          "KEYWORD_ONLY",
+          "False",
+          "bool"
+        ]
+      }
+    },
+    "register_task": {
+      "kind": "function",
+      "params": {
+        "fn": [
+          "POSITIONAL_OR_KEYWORD",
+          null,
+          ""
+        ],
+        "name": [
+          "POSITIONAL_OR_KEYWORD",
+          null,
+          "str"
+        ],
+        "replace": [
+          "KEYWORD_ONLY",
+          "False",
+          "bool"
+        ]
+      }
+    },
+    "restore": {
+      "kind": "function",
+      "params": {
+        "force": [
+          "KEYWORD_ONLY",
+          "False",
+          "bool"
+        ],
+        "source": [
+          "POSITIONAL_OR_KEYWORD",
+          null,
+          ""
+        ]
+      }
+    },
+    "retry": {
+      "kind": "function",
+      "params": {
+        "force": [
+          "POSITIONAL_OR_KEYWORD",
+          "True",
+          "bool"
+        ],
+        "job_id": [
+          "POSITIONAL_OR_KEYWORD",
+          null,
+          "int"
+        ]
+      }
+    },
+    "retry_batch": {
+      "kind": "function",
+      "params": {
+        "batch_id": [
+          "POSITIONAL_OR_KEYWORD",
+          null,
+          "str"
+        ]
+      }
+    },
+    "schedule_install": {
+      "kind": "function",
+      "params": {
+        "task": [
+          "POSITIONAL_OR_KEYWORD",
+          null,
+          "str"
+        ]
+      }
+    },
+    "schedule_list": {
+      "kind": "function",
+      "params": {}
+    },
+    "search": {
+      "kind": "function",
+      "params": {
+        "limit": [
+          "POSITIONAL_OR_KEYWORD",
+          "50",
+          ""
+        ],
+        "name": [
+          "POSITIONAL_OR_KEYWORD",
+          "None",
+          ""
+        ],
+        "near": [
+          "POSITIONAL_OR_KEYWORD",
+          "None",
+          ""
+        ],
+        "radius_deg": [
+          "POSITIONAL_OR_KEYWORD",
+          "0.1",
+          ""
+        ],
+        "since": [
+          "POSITIONAL_OR_KEYWORD",
+          "None",
+          ""
+        ],
+        "source": [
+          "POSITIONAL_OR_KEYWORD",
+          "None",
+          ""
+        ],
+        "target": [
+          "POSITIONAL_OR_KEYWORD",
+          "None",
+          ""
+        ],
+        "until": [
+          "POSITIONAL_OR_KEYWORD",
+          "None",
+          ""
+        ]
+      }
+    },
+    "sources": {
+      "kind": "function",
+      "params": {}
+    },
+    "status": {
+      "kind": "function",
+      "params": {
+        "batch_id": [
+          "POSITIONAL_OR_KEYWORD",
+          "None",
+          "str | None"
+        ]
+      }
+    },
+    "wait": {
+      "kind": "function",
+      "params": {
+        "job_id": [
+          "POSITIONAL_OR_KEYWORD",
+          null,
+          "int"
+        ],
+        "kw": [
+          "VAR_KEYWORD",
+          null,
+          ""
+        ]
+      }
+    }
+  },
+  "ledger_schema": {
+    "tables": {
+      "datasets": [
+        {
+          "name": "id",
+          "notnull": false,
+          "pk": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "source",
+          "notnull": true,
+          "pk": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "target",
+          "notnull": false,
+          "pk": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "params_json",
+          "notnull": true,
+          "pk": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "cache_key",
+          "notnull": true,
+          "pk": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "created_at",
+          "notnull": true,
+          "pk": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "status",
+          "notnull": true,
+          "pk": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "meta_json",
+          "notnull": false,
+          "pk": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "ra",
+          "notnull": false,
+          "pk": false,
+          "type": "REAL"
+        },
+        {
+          "name": "dec",
+          "notnull": false,
+          "pk": false,
+          "type": "REAL"
+        }
+      ],
+      "files": [
+        {
+          "name": "id",
+          "notnull": false,
+          "pk": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "dataset_id",
+          "notnull": true,
+          "pk": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "path",
+          "notnull": true,
+          "pk": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "size",
+          "notnull": true,
+          "pk": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "sha256",
+          "notnull": false,
+          "pk": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "remote_url",
+          "notnull": false,
+          "pk": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "fetched_at",
+          "notnull": true,
+          "pk": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "format",
+          "notnull": false,
+          "pk": false,
+          "type": "TEXT"
+        }
+      ],
+      "health": [
+        {
+          "name": "source",
+          "notnull": false,
+          "pk": true,
+          "type": "TEXT"
+        },
+        {
+          "name": "status",
+          "notnull": true,
+          "pk": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "detail",
+          "notnull": false,
+          "pk": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "checked_at",
+          "notnull": true,
+          "pk": false,
+          "type": "TEXT"
+        }
+      ],
+      "jobs": [
+        {
+          "name": "id",
+          "notnull": false,
+          "pk": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "spec_json",
+          "notnull": true,
+          "pk": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "executor",
+          "notnull": true,
+          "pk": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "url",
+          "notnull": false,
+          "pk": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "dest",
+          "notnull": false,
+          "pk": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "status",
+          "notnull": true,
+          "pk": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "progress",
+          "notnull": false,
+          "pk": false,
+          "type": "REAL"
+        },
+        {
+          "name": "speed",
+          "notnull": false,
+          "pk": false,
+          "type": "REAL"
+        },
+        {
+          "name": "error",
+          "notnull": false,
+          "pk": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "updated_at",
+          "notnull": true,
+          "pk": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "started_at",
+          "notnull": false,
+          "pk": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "finished_at",
+          "notnull": false,
+          "pk": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "file_id",
+          "notnull": false,
+          "pk": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "dataset_id",
+          "notnull": false,
+          "pk": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "gid",
+          "notnull": false,
+          "pk": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "batch_id",
+          "notnull": false,
+          "pk": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "error_type",
+          "notnull": false,
+          "pk": false,
+          "type": "TEXT"
+        }
+      ]
+    },
+    "user_version": 8
+  },
+  "registries": {
+    "descriptors": {
+      "gaia": "gaia_cone",
+      "legacy": "",
+      "mpc": "mpc_ephemeris",
+      "simbad": "simbad_cone",
+      "tess": "tess_lightcurve",
+      "unwise": "unwise_cutout",
+      "vizier": "vizier_cone",
+      "ztf": "",
+      "ztf-lc": "ztf_lightcurve",
+      "ztf-meta": "ztf_metadata"
+    },
+    "tasks": [
+      "gaia_cone",
+      "mpc_ephemeris",
+      "simbad_cone",
+      "tess_lightcurve",
+      "unwise_cutout",
+      "vizier_cone",
+      "ztf_lightcurve",
+      "ztf_metadata"
+    ],
+    "url_sources": [
+      "legacy",
+      "ztf"
+    ]
+  }
+}

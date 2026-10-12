@@ -12,9 +12,10 @@ class TestDescriptorContract:
     def test_descriptor_fields_cover_task_params(self):
         """描述符字段 ∪ example_params ∪ 可选缺省 = 任务可执行参数集。
         每个 task 源的 example_params 必须能过 validate（契约自洽）。"""
-        from myastro.descriptors import REGISTRY
+        from myastro.descriptors import builtin_registry
 
-        for d in REGISTRY.values():
+        # 只盯内置源：用户装插件不该让本守卫红（插件由 plugin.contract 测试负责）
+        for d in builtin_registry().values():
             if d.example_params:
                 norm = d.validate(d.example_params)  # 不抛即自洽
                 assert isinstance(norm, dict)
@@ -34,18 +35,24 @@ def test_descriptors_cover_sources():
 
 @pytest.mark.cap("source.registry")
 def test_register_source_extension_point(env):
-    """第三方扩展点必须可用：类型可构造、注册后立即可见、可撤销。
+    """第三方扩展点必须可用：注册任务 + 描述符 → 立即可见 → 可撤销。
 
-    放在守卫层的原因：清理需要写回 REGISTRY（内部对象），
-    门面层禁止导入内部；而"扩展点是否真的能用"是设计要求，
-    正是守卫要盯的东西。
+    放在守卫层的原因：清理需要写回 REGISTRY/TASKS（内部对象），门面层禁止导入内部；
+    而"扩展点是否真的能用"是设计要求，正是守卫要盯的东西。
+    注：0.4.0 起描述符必须声明 `task` 或 `url_key`（插件协议 v1，注册即校验）。
     """
     import myastro as ma
     from myastro.descriptors import REGISTRY
+    from myastro.tasks import TASKS
 
+    def _noop(ctx):                                     # 只验证注册面，不真取数
+        raise RuntimeError("不该被调用")
+
+    ma.register_task("guard_noop_task", _noop)
     custom = ma.SourceDescriptor(
         name="my-test-src", desc="测试源", product="parquet", status="ok",
-        fields=[ma.FieldSpec("x", int)], example_params={"x": 1})
+        fields=[ma.FieldSpec("x", int)], task="guard_noop_task",
+        example_params={"x": 1})
     ma.register_source(custom)
     try:
         assert "my-test-src" in {r["name"] for r in ma.sources()}
@@ -54,9 +61,10 @@ def test_register_source_extension_point(env):
         assert REGISTRY["my-test-src"].validate({"x": 1})["x"] == 1
     finally:
         REGISTRY.pop("my-test-src", None)
+        TASKS.pop("guard_noop_task", None)
 
     with pytest.raises(ma.ParamError):
-        ma.register_source("not-a-descriptor")     # 类型检查生效
+        ma.register_source("not-a-descriptor")          # 类型检查生效
 
 
 @pytest.mark.cap("design.guards")
@@ -67,14 +75,17 @@ def test_task_registry_and_descriptors_agree():
     —— 声明与实现的契约错位。任务名比参数更硬：写错就是"作业跑起来
     才报 KeyError"。URL_SOURCES 早就有这类守卫，TASKS 一直缺。
     """
-    from myastro.descriptors import REGISTRY
-    from myastro.tasks import TASKS
+    from myastro.descriptors import builtin_registry
+    from myastro.tasks import BUILTIN_TASKS
 
-    referenced = {d.task for d in REGISTRY.values() if d.task}
-    missing_impl = referenced - set(TASKS)
+    # 只绑内置：插件注册的任务/源由 plugin.contract 的守卫负责，
+    # 否则用户在开发插件期间（先注册任务、后注册描述符）会把本守卫弄红。
+    builtins = builtin_registry()
+    referenced = {d.task for d in builtins.values() if d.task}
+    missing_impl = referenced - set(BUILTIN_TASKS)
     assert not missing_impl, f"描述符引用了不存在的 task：{sorted(missing_impl)}"
 
-    unreferenced = set(TASKS) - referenced
+    unreferenced = set(BUILTIN_TASKS) - referenced
     assert not unreferenced, (
         f"TASKS 里定义了但没有任何描述符引用：{sorted(unreferenced)}"
         "（要么删掉，要么补描述符字段声明）")

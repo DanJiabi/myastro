@@ -50,6 +50,7 @@ CAPABILITIES: dict[str, str] = {
     "manage.doctor": "环境自检：依赖/路径可写/账本/文件系统/索引/平台",
     "manage.backup": "账本备份与恢复：在线备份、默认拒绝覆盖、安全副本",
     "facade.api": "门面契约：错误分类、参数校验、执行器隐身",
+    "design.contract": "契约快照（门面 API/CLI/退出码/schema/注册表）",
     "design.guards": "设计守卫：文档同步、边界规则、能力覆盖",
 }
 

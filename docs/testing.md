@@ -59,6 +59,8 @@ capabilities.md 里以 `<!-- cap:id -->` 标注。`myastro test-map` 生成
 3. 每个注册能力必须有测试（**禁止无人证明的能力声明**）
 4. `ma.__all__` 每个门面导出必须被某测试引用（第三方 API 无死角）
 5. test-map.md 必须与生成器逐字一致（手改即红）
+6. contract-snapshot.json 必须与生成器逐字一致，且与代码一致——契约漂移即红
+   （差异定位到叶子路径，见 `tests/guards/test_contract_snapshot.py`）
 
 ## 3. 新增能力的标准顺序
 

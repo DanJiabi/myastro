@@ -3,6 +3,41 @@
 本文件记录对使用者有影响的变更。格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [0.4.0] - 2026-10-11
+
+### 新增
+
+- **插件协议 v1（`docs/plugin-api.md`）**：第三方不改内核即可加数据源。
+  - `myastro.register_task(name, fn, *, replace=False)`：任务**按名注册**（`JobSpec` 只存名字，
+    重试与跨进程恢复依赖它）；内置任务不可覆盖。
+  - `myastro.register_source(descriptor, *, replace=False)`：注册源描述符；内置源不可覆盖。
+  - `SourceDescriptor` 新增 `api_version` / `requires` / `install_hint` / `probe_url`
+    （全有默认值，内置源行为不变）。
+  - 注册即 **fail-fast 校验**（13 条规则：名字格式、meta 非空、status 枚举、字段名唯一与格式、
+    pattern 可编译、索引存在、必须且只能有 task/url_key、任务与 URL 键必须存在、
+    url_key 源的字符串字段须有 `pattern|name_like|choices`、`example_params` 必填且自洽、
+    requires 与 probe_url 合法性）；失败抛 `ParamError`（退出码 2）且不留部分状态。
+- **契约快照与守卫**：`docs/contract-snapshot.json`（门面 API/CLI 命令与选项/退出码/
+  账本 schema/注册表）+ `myastro contract-snapshot [--check]`。任何契约变化都会让
+  `pytest` 变红并把差异**定位到叶子路径**，迫使变化被显式记录在 `docs/contract-changelog.md`。
+  守卫**只绑内置源与内置任务**：装了第三方插件后本体守卫仍然全绿。
+
+### 文档
+
+- `docs/change-policy.md`：变更分级（L1 局部 / L2 契约 / L3 结构）、颗粒度上限、
+  四条硬约束（一次提交一个意图、机械改写须附等价性证明、跨切面语义须有能变红的回归测试、
+  改用户环境行为须写"你需要做什么"），以及文件预算的计法（生成物与簿记不计入）。
+- `docs/contract-changelog.md`：契约变更记录 + 0.1→0.3.5 回溯基线
+  （AST 实测：门面 33 项、facade 27 个函数、CLI 24 个子命令、`EXIT_CODES` 4 项、
+  账本 schema v1–v8，**自 0.2.0 起零漂移**）。
+- `CONTRIBUTING.md` 新增 Rule 3（变更分级）与 Rule 4（插件协议）。
+
+### 说明（你需要做什么）
+
+- **既有用户无需改动**：`register_source(d)` 的旧调用方式仍然可用，内置源行为与签名不变。
+- **贡献者**：改动对外契约时，需要 `myastro contract-snapshot` 重新生成快照，
+  并在 `docs/contract-changelog.md` 追加一行——否则 `pytest` 会红（这是刻意的）。
+
 ## [0.3.5] - 2026-10-11
 
 ### 修复
@@ -232,3 +267,4 @@
 [0.3.3]: https://github.com/DanJiabi/myastro/releases/tag/v0.3.3
 [0.3.4]: https://github.com/DanJiabi/myastro/releases/tag/v0.3.4
 [0.3.5]: https://github.com/DanJiabi/myastro/releases/tag/v0.3.5
+[0.4.0]: https://github.com/DanJiabi/myastro/releases/tag/v0.4.0

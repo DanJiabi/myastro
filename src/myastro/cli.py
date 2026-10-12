@@ -122,6 +122,33 @@ def _cmd_retry_batch(args, db) -> int:
     return 0
 
 
+def _cmd_contract_snapshot(args, db) -> int:
+    from .errors import ParamError
+
+    try:
+        return _contract_snapshot(args)
+    except ValueError as e:          # 不在源码仓库（如已安装的 wheel）
+        raise ParamError(f"该命令仅用于源码仓库：{e}") from e
+
+
+def _contract_snapshot(args) -> int:
+    from .contract import dumps, problems, snapshot_path
+
+    if args.check:
+        issues = problems()
+        for i in issues:
+            print("✗", i)
+        print("契约快照：", "一致" if not issues else f"{len(issues)} 处不一致")
+        return 1 if issues else 0
+    path = snapshot_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(dumps())
+    print(f"已生成 {path}")
+    for i in problems():
+        print("  ⚠", i)
+    return 0
+
+
 def _cmd_test_map(args, db) -> int:
     from .errors import ParamError
 
@@ -302,6 +329,11 @@ def _build_parser() -> argparse.ArgumentParser:
     p_rs.add_argument("--force", action="store_true",
                       help="覆盖现有账本（会先留存 .pre-restore-*.bak）")
     p_rs.set_defaults(fn=_cmd_restore)
+    p_contract = sub.add_parser("contract-snapshot",
+                                help="生成/检查契约快照（门面/CLI/schema/注册表）")
+    p_contract.add_argument("--check", action="store_true",
+                            help="只检查不写文件（守卫用）")
+    p_contract.set_defaults(fn=_cmd_contract_snapshot)
     p_tmap = sub.add_parser("test-map", help="生成/检查测试能力地图")
     p_tmap.add_argument("--check", action="store_true",
                         help="只检查不写文件（守卫用）")

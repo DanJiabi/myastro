@@ -9,6 +9,7 @@ E0 采用"包装现有注册表"策略：SOURCES/URL_SOURCES/TASKS 保持原位�
 """
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -57,6 +58,14 @@ class FieldSpec:
         return value
 
 
+# ── 插件协议 v1（docs/plugin-api.md）──
+# 第三方源的契约版本：插件在描述符里声明 api_version，不匹配则拒绝注册（不崩）。
+PLUGIN_API_VERSION = 1
+_PLUGIN_NAME_RE = re.compile(r"^[a-z][a-z0-9-]{0,31}$")
+_FIELD_NAME_RE = re.compile(r"^[a-z][a-z0-9_]{0,31}$")
+_MODULE_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_.]*$")
+
+
 @dataclass
 class SourceDescriptor:
     name: str
@@ -67,6 +76,11 @@ class SourceDescriptor:
     task: str | None = None                      # python 执行器：TASKS 键
     url_key: str | None = None                   # aria2 执行器：URL_SOURCES 键
     example_params: dict = field(default_factory=dict)   # 完整合法参数示例
+    # ── 插件协议 v1（内置源一律用默认值，行为不变）──
+    api_version: int = PLUGIN_API_VERSION        # 插件声明的协议版本
+    requires: list[str] = field(default_factory=list)    # 依赖模块名（doctor 报告）
+    install_hint: str = ""                       # 缺依赖时给用户的安装命令
+    probe_url: str | None = None                 # 可选：health 探针 URL
 
     def validate(self, params: dict) -> dict:
         """参数校验/补默认：返回规范化 params；未知键/类型错抛 ValueError。"""
@@ -171,6 +185,103 @@ def _d(name: str, fields_: list[FieldSpec], task: str | None = None,
                             url_key=url_key or s.get("url_key"), **kw)
 
 
+def validate_descriptor(d: SourceDescriptor) -> None:
+    """注册前的 fail-fast 校验（插件协议 v1）。
+
+    为什么在**注册时**而不是 fetch 时校验：坏插件应该在用户第一次用它之前就被拒绝，
+    并且报错要能直接指出改哪儿。任何一条不满足都抛 ValueError（facade 转 ParamError）。
+    """
+    from .io.sources import STATUS  # 函数内导入：避免 descriptors ↔ io.sources 循环
+
+    if not isinstance(d, SourceDescriptor):
+        # 刻意用 ValueError：错误分类把它映射为 ParamError（退出码 2 参数错误）
+        raise ValueError("须为 SourceDescriptor 实例")  # noqa: TRY004
+    if not _PLUGIN_NAME_RE.fullmatch(d.name):
+        raise ValueError(
+            f"源名 {d.name!r} 不合法：须匹配 {_PLUGIN_NAME_RE.pattern}"
+            "（小写字母开头，可含数字与连字符，≤32 字符）")
+    if not d.desc.strip() or not d.product.strip():
+        raise ValueError(f"{d.name}: desc 与 product 均不能为空")
+    if d.status not in STATUS:
+        raise ValueError(f"{d.name}: status {d.status!r} 不在枚举 {sorted(STATUS)}")
+    if d.api_version != PLUGIN_API_VERSION:
+        raise ValueError(
+            f"{d.name}: 插件协议版本 {d.api_version} 与本机 {PLUGIN_API_VERSION} 不符"
+            "（请升级插件或 myastro）")
+
+    names = [f.name for f in d.fields]
+    if len(names) != len(set(names)):
+        dup = sorted({n for n in names if names.count(n) > 1})
+        raise ValueError(f"{d.name}: 字段名重复 {dup}")
+    for f in d.fields:
+        if not _FIELD_NAME_RE.fullmatch(f.name):
+            raise ValueError(f"{d.name}: 字段名 {f.name!r} 不合法"
+                             f"（须匹配 {_FIELD_NAME_RE.pattern}）")
+        if f.pattern is not None:
+            try:
+                re.compile(f.pattern)
+            except re.error as e:
+                raise ValueError(f"{d.name}.{f.name}: pattern 无法编译：{e}") from e
+        if f.index is not None:
+            from .io.index import INDEXES
+            if f.index not in INDEXES:
+                raise ValueError(f"{d.name}.{f.name}: 未知索引 {f.index!r}"
+                                 f"（可用: {sorted(INDEXES)}）")
+
+
+    if not d.example_params:
+        raise ValueError(f"{d.name}: 必须提供 example_params（TUI 的 F2 示例依赖它）")
+    d.validate(d.example_params)             # 自洽性：示例必须能通过自己的校验
+
+    for mod in d.requires:
+        if not _MODULE_RE.fullmatch(mod):
+            raise ValueError(f"{d.name}: requires 里的模块名 {mod!r} 不合法")
+    if d.requires and not d.install_hint.strip():
+        raise ValueError(f"{d.name}: 声明了 requires 就必须给 install_hint"
+                         "（doctor 用它告诉用户怎么装）")
+    if d.probe_url is not None and not str(d.probe_url).startswith(("http://", "https://")):
+        raise ValueError(f"{d.name}: probe_url 必须是 http(s) 地址")
+    if bool(d.task) == bool(d.url_key):
+        raise ValueError(f"{d.name}: 必须且只能声明 task 或 url_key 之一")
+    if d.task:
+        from .tasks import TASKS
+        if d.task not in TASKS:
+            raise ValueError(f"{d.name}: 任务 {d.task!r} 不在 TASKS"
+                             f"（先 register_task；可用: {sorted(TASKS)}）")
+    else:
+        from .io.urls import URL_SOURCES
+        if d.url_key not in URL_SOURCES:
+            raise ValueError(f"{d.name}: url_key {d.url_key!r} 不在 URL_SOURCES"
+                             f"（可用: {sorted(URL_SOURCES)}）")
+        # aria2 路径会把参数拼进 URL/文件名 → 三个字符串字段必须至少有一道防线：
+        # pattern（严格格式）/ name_like（走 safe_name）/ choices（有限取值）。
+        # 内置源即参考实现：legacy.brick 用 pattern，ztf.filtercode 用 choices，
+        # ztf.ffd 用 name_like——三者都算合规。
+        for f in d.fields:
+            if f.type is str and not (f.pattern or f.name_like or f.choices):
+                raise ValueError(
+                    f"{d.name}.{f.name}: url_key 源里会进 URL/文件名的字符串字段必须"
+                    "声明 pattern、name_like=True 或 choices 之一（防路径穿越）")
+
+
+def register(d: SourceDescriptor, *, replace: bool = False) -> None:
+    """注册第三方源（冲突检查 → 校验 → 写入；失败不留部分状态）。
+
+    冲突检查放在校验**之前**：覆盖内置源是最根本的错误，报它比报描述符里的
+    其它细节更有用（也免得插件作者被次要错误引到岔路上）。
+    """
+    if not isinstance(d, SourceDescriptor):
+        # 类型检查必须在取属性之前：否则传错类型会抛 AttributeError 而不是 ParamError
+        # （实测：守卫测试里 `ma.register_source("not-a-descriptor")` 撞的就是这个）
+        raise ValueError("须为 SourceDescriptor 实例")  # noqa: TRY004
+    if d.name in BUILTIN_SOURCES:
+        raise ValueError(f"{d.name}: 不允许覆盖内置源（内置源名保留给 myastro 本体）")
+    if d.name in REGISTRY and not replace:
+        raise ValueError(f"{d.name}: 已注册（要替换请显式 replace=True）")
+    validate_descriptor(d)
+    REGISTRY[d.name] = d
+
+
 REGISTRY: dict[str, SourceDescriptor] = {d.name: d for d in [
     _d("tess", [
         FieldSpec("target", str, label="目标名", name_like=True),
@@ -243,3 +354,11 @@ REGISTRY: dict[str, SourceDescriptor] = {d.name: d for d in [
     ], task="unwise_cutout",
        example_params={"ra": 180.0, "dec": 0.0, "size": 300, "band": "w1"}),
 ]}
+
+# 内置源名单：**守卫与契约快照只绑这些**——用户装了插件不该让 pytest/--check 变红。
+BUILTIN_SOURCES: frozenset[str] = frozenset(REGISTRY)
+
+
+def builtin_registry() -> dict[str, SourceDescriptor]:
+    """只有内置源的只读视图（守卫/快照/doc-sync 用）。"""
+    return {name: REGISTRY[name] for name in sorted(BUILTIN_SOURCES)}

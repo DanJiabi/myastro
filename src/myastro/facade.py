@@ -72,11 +72,33 @@ def describe(source: str) -> dict[str, Any]:
     return next(s for s in sources() if s["name"] == source)
 
 
-def register_source(descriptor: SourceDescriptor) -> None:
-    """第三方扩展点：注册自定义源描述符。"""
-    if not isinstance(descriptor, SourceDescriptor):
-        raise errors.ParamError("须为 SourceDescriptor 实例")
-    REGISTRY[descriptor.name] = descriptor
+def register_source(descriptor: SourceDescriptor, *,
+                    replace: bool = False) -> None:
+    """插件协议 v1：注册第三方源（校验 → 冲突检查 → 写入）。
+
+    规则与示例见 `docs/plugin-api.md`；校验失败抛 `ParamError`（错误分类：参数），
+    且**不留部分状态**。内置源不可覆盖。
+    """
+    from .descriptors import register as _register
+
+    try:
+        _register(descriptor, replace=replace)
+    except ValueError as e:
+        raise errors.ParamError(str(e)) from e
+
+
+def register_task(name: str, fn, *, replace: bool = False) -> None:
+    """插件协议 v1：注册第三方任务函数（`fn(ctx) -> FetchResult`）。
+
+    任务按名寻址是硬要求（JobSpec 只存名字，重试与跨进程恢复依赖它）；
+    内置任务不可覆盖。校验失败抛 `ParamError`。
+    """
+    from .tasks import register_task as _register_task
+
+    try:
+        _register_task(name, fn, replace=replace)
+    except ValueError as e:
+        raise errors.ParamError(str(e)) from e
 
 
 def status(batch_id: str | None = None) -> list[dict[str, Any]]:

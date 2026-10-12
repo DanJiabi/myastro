@@ -129,6 +129,10 @@ Exit codes are a contract, so scripts can branch:
 
 ## Documentation
 
+Extending myastro with your own data source: `docs/plugin-api.md` (plugin protocol v1).
+
+Contributor-facing process docs (Chinese): `docs/change-policy.md` (change classes, granularity limits) and `docs/contract-changelog.md` (every change to the public contract).
+
 | Document | Language | Audience |
 |---|---|---|
 | [Install](docs/en/install.md) · [Quick start](docs/en/quickstart.md) | EN | users |
@@ -149,7 +153,7 @@ pip install -e ".[dev]"                 # or: pip install -e . pytest ruff pyfla
 git config core.hooksPath githooks      # versioned pre-push gate (full suite + pyflakes)
 pytest -q                               # 372 tests, offline (network is stubbed)
 pytest -m "unit or guards" -q           # fast lane (~3 s)
-myastro test-map && myastro doc-sync    # regenerate docs (guards fail when stale)
+myastro test-map && myastro doc-sync && myastro contract-snapshot   # regenerate docs/snapshots (guards fail when stale)
 ```
 
 > `requirements-lock.txt` is the maintainer's conda environment record (it contains

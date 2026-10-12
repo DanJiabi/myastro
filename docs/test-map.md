@@ -4,12 +4,12 @@
 
 能力 id 定义在 `src/myastro/io/testmap.py`；能力说明与成熟度见 [capabilities.md](capabilities.md)。
 
-共 24 项能力、1370 个测试。
+共 25 项能力、1432 个测试。
 
 | 能力 | 说明 | 测试数 |
 |---|---|---|
 | `source.registry` | 源注册表与描述符：接入声明、示例参数、漂移守卫 | 43 |
-| `source.contract` | 单源实现契约：参数校验、落盘、入库、空结果 | 64 |
+| `source.contract` | 单源实现契约：参数校验、落盘、入库、空结果 | 103 |
 | `source.health` | 源健康探测与状态覆盖（ok/degraded/unreachable） | 18 |
 | `source.dormant` | 休眠源防腐烂（asassn：后端失联期间保持正确） | 2 |
 | `acquire.fetch` | 单件获取：缓存短路、原子落盘、入库、aria2 对账 | 29 |
@@ -31,6 +31,7 @@
 | `manage.doctor` | 环境自检：依赖/路径可写/账本/文件系统/索引/平台 | 15 |
 | `manage.backup` | 账本备份与恢复：在线备份、默认拒绝覆盖、安全副本 | 23 |
 | `facade.api` | 门面契约：错误分类、参数校验、执行器隐身 | 3 |
+| `design.contract` | 契约快照（门面 API/CLI/退出码/schema/注册表） | 23 |
 | `design.guards` | 设计守卫：文档同步、边界规则、能力覆盖 | 217 |
 
 ## 能力 → 测试明细
@@ -83,6 +84,45 @@
 
 ### `source.contract` — 单源实现契约：参数校验、落盘、入库、空结果
 
+- `tests/kernel/test_plugin_contract.py::TestBuiltinUnchanged::test_all_builtins_pass_validation`
+- `tests/kernel/test_plugin_contract.py::TestBuiltinUnchanged::test_builtin_lists_are_frozen_snapshots`
+- `tests/kernel/test_plugin_contract.py::TestEndToEnd::test_plugin_task_fetches_end_to_end`
+- `tests/kernel/test_plugin_contract.py::TestRejectsBadPlugins::_synth_task_registered`
+- `tests/kernel/test_plugin_contract.py::TestRejectsBadPlugins::test_failed_registration_leaves_registry_clean`
+- `tests/kernel/test_plugin_contract.py::TestRejectsBadPlugins::test_refuses_duplicate_plugin_without_replace`
+- `tests/kernel/test_plugin_contract.py::TestRejectsBadPlugins::test_refuses_to_shadow_builtin_source`
+- `tests/kernel/test_plugin_contract.py::TestRejectsBadPlugins::test_rejects_api_version_mismatch`
+- `tests/kernel/test_plugin_contract.py::TestRejectsBadPlugins::test_rejects_bad_field_name`
+- `tests/kernel/test_plugin_contract.py::TestRejectsBadPlugins::test_rejects_bad_probe_url`
+- `tests/kernel/test_plugin_contract.py::TestRejectsBadPlugins::test_rejects_both_executors`
+- `tests/kernel/test_plugin_contract.py::TestRejectsBadPlugins::test_rejects_duplicate_field_names`
+- `tests/kernel/test_plugin_contract.py::TestRejectsBadPlugins::test_rejects_empty_meta`
+- `tests/kernel/test_plugin_contract.py::TestRejectsBadPlugins::test_rejects_inconsistent_example_params`
+- `tests/kernel/test_plugin_contract.py::TestRejectsBadPlugins::test_rejects_invalid_name`
+- `tests/kernel/test_plugin_contract.py::TestRejectsBadPlugins::test_rejects_missing_example_params`
+- `tests/kernel/test_plugin_contract.py::TestRejectsBadPlugins::test_rejects_no_executor`
+- `tests/kernel/test_plugin_contract.py::TestRejectsBadPlugins::test_rejects_requires_without_install_hint`
+- `tests/kernel/test_plugin_contract.py::TestRejectsBadPlugins::test_rejects_uncompilable_pattern`
+- `tests/kernel/test_plugin_contract.py::TestRejectsBadPlugins::test_rejects_unknown_index`
+- `tests/kernel/test_plugin_contract.py::TestRejectsBadPlugins::test_rejects_unknown_status`
+- `tests/kernel/test_plugin_contract.py::TestRejectsBadPlugins::test_rejects_unknown_task`
+- `tests/kernel/test_plugin_contract.py::TestRejectsBadPlugins::test_rejects_unknown_url_key`
+- `tests/kernel/test_plugin_contract.py::TestRejectsBadPlugins::test_url_key_source_requires_field_guard`
+- `tests/kernel/test_plugin_contract.py::TestTaskRegistration::test_refuses_duplicate_task_without_replace`
+- `tests/kernel/test_plugin_contract.py::TestTaskRegistration::test_refuses_to_shadow_builtin_task`
+- `tests/kernel/test_plugin_contract.py::TestTaskRegistration::test_rejects_bad_name`
+- `tests/kernel/test_plugin_contract.py::TestTaskRegistration::test_rejects_non_callable`
+- `tests/kernel/test_plugin_contract.py::test_plugin_does_not_perturb_guards_or_snapshot`
+- `tests/kernel/test_plugin_contract.py::test_plugin_does_not_perturb_guards_or_snapshot`
+- `tests/kernel/test_plugin_contract.py::test_plugin_does_not_perturb_guards_or_snapshot`
+- `tests/kernel/test_plugin_contract.py::test_plugin_does_not_perturb_guards_or_snapshot`
+- `tests/kernel/test_plugin_contract.py::test_plugin_does_not_perturb_guards_or_snapshot`
+- `tests/kernel/test_plugin_contract.py::test_plugin_does_not_perturb_guards_or_snapshot`
+- `tests/kernel/test_plugin_contract.py::test_plugin_does_not_perturb_guards_or_snapshot`
+- `tests/kernel/test_plugin_contract.py::test_plugin_does_not_perturb_guards_or_snapshot`
+- `tests/kernel/test_plugin_contract.py::test_plugin_does_not_perturb_guards_or_snapshot`
+- `tests/kernel/test_plugin_contract.py::test_plugin_does_not_perturb_guards_or_snapshot`
+- `tests/kernel/test_plugin_contract.py::test_plugin_does_not_perturb_guards_or_snapshot`
 - `tests/sources/test_asassn.py::test_service_unreachable_gives_concise_actionable_error`
 - `tests/sources/test_asassn.py::test_service_unreachable_gives_concise_actionable_error`
 - `tests/sources/test_asassn.py::test_service_unreachable_gives_concise_actionable_error`
@@ -1256,6 +1296,32 @@
 - `tests/facade/test_facade.py::TestFacadeE0::test_coerce_and_choices`
 - `tests/facade/test_facade.py::TestFacadeE0::test_param_error_mapping`
 - `tests/facade/test_facade.py::TestQueryBoundaryContract::test_boundary_violations_raise_param_error`
+
+### `design.contract` — 契约快照（门面 API/CLI/退出码/schema/注册表）
+
+- `tests/guards/test_contract_snapshot.py::test_contract_snapshot_is_current`
+- `tests/guards/test_contract_snapshot.py::test_contract_snapshot_is_current`
+- `tests/guards/test_contract_snapshot.py::test_contract_snapshot_is_current`
+- `tests/guards/test_contract_snapshot.py::test_contract_snapshot_is_current`
+- `tests/guards/test_contract_snapshot.py::test_contract_snapshot_is_current`
+- `tests/guards/test_contract_snapshot.py::test_contract_snapshot_is_current`
+- `tests/guards/test_contract_snapshot.py::test_snapshot_is_the_generated_bytes`
+- `tests/guards/test_contract_snapshot.py::test_snapshot_is_the_generated_bytes`
+- `tests/guards/test_contract_snapshot.py::test_snapshot_is_the_generated_bytes`
+- `tests/guards/test_contract_snapshot.py::test_snapshot_is_the_generated_bytes`
+- `tests/guards/test_contract_snapshot.py::test_snapshot_is_the_generated_bytes`
+- `tests/guards/test_contract_snapshot.py::test_snapshot_is_the_generated_bytes`
+- `tests/kernel/test_contract.py::TestNormalization::test_annotations_drop_module_prefixes`
+- `tests/kernel/test_contract.py::TestNormalization::test_memory_addresses_are_normalized`
+- `tests/kernel/test_contract.py::TestProblems::_write`
+- `tests/kernel/test_contract.py::TestProblems::test_invalid_json_is_reported`
+- `tests/kernel/test_contract.py::TestProblems::test_missing_file_is_reported`
+- `tests/kernel/test_contract.py::TestProblems::test_reports_added_removed_and_changed_items`
+- `tests/kernel/test_contract.py::TestSnapshot::test_cli_covers_nested_commands`
+- `tests/kernel/test_contract.py::TestSnapshot::test_covers_every_facade_export`
+- `tests/kernel/test_contract.py::TestSnapshot::test_exit_codes_are_snapshotted`
+- `tests/kernel/test_contract.py::TestSnapshot::test_is_deterministic`
+- `tests/kernel/test_contract.py::TestSnapshot::test_ledger_schema_matches_scene_version`
 
 ### `design.guards` — 设计守卫：文档同步、边界规则、能力覆盖
 
