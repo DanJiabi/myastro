@@ -30,7 +30,13 @@
 
 | 2026-10-12 | **0.4.3** | 文档架构与安装面 | ① 文档树重构为 `docs/{zh,en}`（中文开发文档进 `docs/zh/dev/`）；② 新增 `[docs]` extra（mkdocs-material + mkdocs-static-i18n）并并入 `[dev]`；③ 双语配对守卫规则升级为"英文页必须在中文有同名对应" | 为发布双语文档站做准备；`[docs]` 让贡献者一条命令装齐站点依赖 | ① 文档路径变化（对外链接会变，README/CHANGELOG 已同步）；② 纯新增 extra；③ 守卫规则收紧（英文孤儿页现在会红） | `tests/guards/test_docs_paths.py`（递归扫描 + 配对规则）、`mkdocs build --strict`（CI docs 工作流） |
 
-| 2026-10-12 | **0.5.0** | 源发现与任务解析 | ① 新增自动发现：entry-points 组  + ；② /按源名查表//runner 任务解析 触发惰性发现；③ 任务解析失败改为落成**作业失败**（原会拖死工作线程） | 装插件后仍需用户手写 import 才能用；且解析失败会让作业永远停在 running | 纯新增能力：不装插件时行为与 0.4.x 一致（快照/守卫仍只绑内置）；显式 import 的旧用法仍可用 | （25 条，含三条变异验证）、CI 的示例插件步骤（**不显式 import** 也须取数成功） |## 快照机制的建立（2026-10-11）
+| 2026-10-12 | **0.5.0** | 源发现与任务解析 | ① 新增自动发现：entry-points 组 `myastro.sources` + `MYASTRO_SOURCES`；② `sources()` / 按源名查表 / `cli.main()` / runner 任务解析 触发惰性发现；③ 任务解析失败改为落成**作业失败**（原会拖死工作线程） | 装插件后仍需用户手写 import 才能用；且解析失败会让作业永远停在 running | 纯新增能力：不装插件时行为与 0.4.x 一致（快照/守卫仍只绑内置）；显式 import 的旧用法仍可用 | `tests/kernel/test_plugin_discovery.py`（25 条，含三条变异验证）、CI 的示例插件步骤（**不显式 import** 也须取数成功） |
+
+| 2026-10-12 | **0.5.1** | 插件状态可见性 | ① `myastro.sources()` 每项新增 `origin` 字段（`builtin` / `plugin:<模块>` / `runtime`）；② `doctor` 新增「插件（可选）」检查组（已加载列表 + 每个失败插件一条 WARN，带类型/原因/建议） | 插件失败已被隔离，但**用户看不见**——等于把失败静默吞掉；来源也无法回答「这个源是谁提供的」 | 纯新增字段与检查项：不装插件时 `origin` 恒为 `builtin`、doctor 多一条 OK；既有调用方按名取键不受影响 | `tests/kernel/test_plugin_discovery.py`（32 条，含三条变异验证：去掉 origin 字段 / 摘掉 doctor 检查 / 清空失败展示循环，均确认真能红） |
+
+> 已知覆盖缺口（如实记录）：契约快照只覆盖**函数签名**，`sources()` 返回字典里**新增字段**这类行为契约不会被快照捕获——本次靠人工登记。是否把返回结构也纳入快照，留待后续评估（见 `docs/zh/dev/change-policy.md` §5）。
+
+## 快照机制的建立（2026-10-11）
 
 - 生成器 `src/myastro/contract.py`（顶层模块——放 `io/` 会违反分层：内核不许依赖 `cli`）。
 - 覆盖：`facade_api` / `cli`（含嵌套子命令）/ `exit_codes` / `ledger_schema` / `registries`。

@@ -4,12 +4,12 @@
 
 能力 id 定义在 `src/myastro/io/testmap.py`；能力说明与成熟度见 [capabilities.md](capabilities.md)。
 
-共 25 项能力、1475 个测试。
+共 25 项能力、1483 个测试。
 
 | 能力 | 说明 | 测试数 |
 |---|---|---|
 | `source.registry` | 源注册表与描述符：接入声明、示例参数、漂移守卫 | 43 |
-| `source.contract` | 单源实现契约：参数校验、落盘、入库、空结果 | 143 |
+| `source.contract` | 单源实现契约：参数校验、落盘、入库、空结果 | 151 |
 | `source.health` | 源健康探测与状态覆盖（ok/degraded/unreachable） | 18 |
 | `source.dormant` | 休眠源防腐烂（asassn：后端失联期间保持正确） | 2 |
 | `acquire.fetch` | 单件获取：缓存短路、原子落盘、入库、aria2 对账 | 29 |
@@ -143,6 +143,11 @@
 - `tests/kernel/test_plugin_discovery.py::TestContract::test_empty_by_default_without_plugins`
 - `tests/kernel/test_plugin_discovery.py::TestContract::test_error_record_shape`
 - `tests/kernel/test_plugin_discovery.py::TestContract::test_views_are_read_only_copies`
+- `tests/kernel/test_plugin_discovery.py::TestDoctorVisibility::_plugin_checks`
+- `tests/kernel/test_plugin_discovery.py::TestDoctorVisibility::test_hanging_plugin_is_reported_not_fatal`
+- `tests/kernel/test_plugin_discovery.py::TestDoctorVisibility::test_reports_failure_with_reason_and_hint`
+- `tests/kernel/test_plugin_discovery.py::TestDoctorVisibility::test_reports_loaded_plugin`
+- `tests/kernel/test_plugin_discovery.py::TestDoctorVisibility::test_reports_none_installed`
 - `tests/kernel/test_plugin_discovery.py::TestEnvParsing::test_does_not_trigger_discovery`
 - `tests/kernel/test_plugin_discovery.py::TestEnvParsing::test_empty_when_unset`
 - `tests/kernel/test_plugin_discovery.py::TestEnvParsing::test_parses_list_and_ignores_blanks`
@@ -160,6 +165,9 @@
 - `tests/kernel/test_plugin_discovery.py::TestLoader::test_loads_plugin_from_env_var`
 - `tests/kernel/test_plugin_discovery.py::TestLoader::test_missing_module_is_recorded_not_raised`
 - `tests/kernel/test_plugin_discovery.py::TestLoader::test_registration_error_is_recorded_with_hint`
+- `tests/kernel/test_plugin_discovery.py::TestOrigenVisibility::test_builtin_sources_are_marked_builtin`
+- `tests/kernel/test_plugin_discovery.py::TestOrigenVisibility::test_plugin_sources_are_marked_with_module`
+- `tests/kernel/test_plugin_discovery.py::TestOrigenVisibility::test_runtime_registered_source_is_marked_runtime`
 - `tests/kernel/test_plugin_discovery.py::TestRecoveryFallback::test_resolve_fn_recovers_plugin_task`
 - `tests/kernel/test_plugin_discovery.py::TestRecoveryFallback::test_resolve_fn_still_raises_when_task_truly_missing`
 - `tests/kernel/test_plugin_discovery.py::TestUnresolvableTask::test_missing_task_marks_job_failed_instead_of_killing_thread`

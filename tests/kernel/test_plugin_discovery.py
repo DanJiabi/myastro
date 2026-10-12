@@ -382,3 +382,82 @@ class TestUnresolvableTask:
         # 作业被标成 failed（而不是留在 running）
         rows = ma.status()
         assert rows and rows[-1]["status"] in ("failed", "orphaned")
+
+
+# ── 2b：插件状态的可见性（来源标注 + doctor 展示）──────────────────────────────
+
+@pytest.mark.cap("source.contract")
+class TestOrigenVisibility:
+    def test_builtin_sources_are_marked_builtin(self, env):
+        import myastro as ma
+
+        origins = {s["name"]: s["origin"] for s in ma.sources()}
+        assert origins, "源清单为空"
+        assert all(v == "builtin" for v in origins.values()), origins
+
+    def test_plugin_sources_are_marked_with_module(self, plugin_env, monkeypatch, env):
+        import myastro as ma
+
+        name = plugin_env("origin_good", GOOD_PLUGIN)
+        monkeypatch.setenv(plugins.ENV_VAR, name)
+        origins = {s["name"]: s["origin"] for s in ma.sources()}
+        assert origins["disc-demo"] == f"plugin:{name}"
+        assert origins["tess"] == "builtin"          # 内置不受影响
+
+    def test_runtime_registered_source_is_marked_runtime(self, env):
+        """插件机制之外显式注册的源（如 notebook 里临时加的）标 runtime。"""
+        import myastro as ma
+        from myastro.descriptors import REGISTRY
+
+        def _noop(ctx):
+            raise RuntimeError("不该被调用")
+
+        ma.register_task("origin_runtime_task", _noop)
+        ma.register_source(ma.SourceDescriptor(
+            name="origin-runtime", desc="临时源", product="parquet", status="ok",
+            fields=[ma.FieldSpec("t", pattern=r"^\w+$")],
+            task="origin_runtime_task", example_params={"t": "x"}))
+        try:
+            origins = {s["name"]: s["origin"] for s in ma.sources()}
+            assert origins["origin-runtime"] == "runtime"
+        finally:
+            REGISTRY.pop("origin-runtime", None)
+            from myastro.tasks import TASKS
+            TASKS.pop("origin_runtime_task", None)
+
+
+@pytest.mark.cap("source.contract")
+class TestDoctorVisibility:
+    def _plugin_checks(self) -> list[dict]:
+        import myastro as ma
+
+        return [c for c in ma.doctor() if "插件" in c["name"]]
+
+    def test_reports_none_installed(self, env):
+        (check,) = self._plugin_checks()
+        assert check["status"] == "ok" and "未安装" in check["detail"]
+
+    def test_reports_loaded_plugin(self, plugin_env, monkeypatch, env):
+        name = plugin_env("doc_good", GOOD_PLUGIN)
+        monkeypatch.setenv(plugins.ENV_VAR, name)
+        checks = self._plugin_checks()
+        assert any(c["status"] == "ok" and name in c["detail"] for c in checks), checks
+
+    def test_reports_failure_with_reason_and_hint(self, plugin_env, monkeypatch, env):
+        """失败插件必须在 doctor 里**可见**（类型 + 原因 + 建议），而不是被静默吞掉。"""
+        name = plugin_env("doc_bad", BAD_REGISTER)
+        monkeypatch.setenv(plugins.ENV_VAR, name)
+        checks = self._plugin_checks()
+        bad = [c for c in checks if c["status"] == "warn" and name in c["name"]]
+        assert bad, checks
+        assert "ParamError" in bad[0]["detail"] and "协议版本" in bad[0]["detail"]
+        assert bad[0].get("fix"), "失败插件应给出修复建议"
+
+    def test_hanging_plugin_is_reported_not_fatal(self, plugin_env, monkeypatch, env):
+        """挂死插件：doctor 报 WARN，但 doctor 本身正常返回。"""
+        name = plugin_env("doc_hang", HANGS)
+        monkeypatch.setenv(plugins.ENV_VAR, name)
+        monkeypatch.setattr(plugins, "PROBE_TIMEOUT", 1.0)
+        checks = self._plugin_checks()
+        warn = [c for c in checks if c["status"] == "warn"]
+        assert warn and "ProbeTimeout" in warn[0]["detail"]

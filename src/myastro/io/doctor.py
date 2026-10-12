@@ -238,6 +238,29 @@ def _check_indexes() -> list[Check]:
     return out
 
 
+def _check_plugins() -> list[Check]:
+    """插件加载状态（可选能力）。
+
+    为什么放在 doctor：插件失败**不能**拖垮核心（发现机制已隔离），但用户必须能看见
+    "哪个插件没加载上、为什么、怎么办"——否则失败等于被静默吞掉。
+    缺失插件不判失败（WARN/OK），与"可选依赖"同一个口径。
+    """
+    from .plugins import ensure_discovered, errors, loaded
+
+    ensure_discovered()
+    out: list[Check] = []
+    names = loaded()
+    if names:
+        out.append(Check("插件（可选）", OK, f"已加载 {len(names)} 个：{', '.join(names)}"))
+    else:
+        out.append(Check("插件（可选）", OK, "未安装第三方插件"))
+    for err in errors():
+        out.append(Check(f"插件 {err.module}", WARN,
+                         f"加载失败（{err.error_type}）：{err.message}",
+                         err.hint or None))
+    return out
+
+
 def _check_aria2() -> list[Check]:
     """aria2 是**可选**的系统依赖：只有批量下载（legacy / ztf / manifest）需要它，
     其余源走 python 执行器。因此缺失只报警告，不让 doctor 判失败。"""
@@ -300,6 +323,7 @@ def run(cfg=None, *, sample: int = 200) -> list[Check]:
     # 分组用**稳定标签**（而非函数名）：单项检查崩了也要能报出"是哪一组坏了"，
     # 且测试打桩后标签不变。
     plan = (("依赖", _check_deps, {}),
+            ("插件", _check_plugins, {}),
             ("aria2", _check_aria2, {}),
             ("路径", _check_paths, {"cfg": cfg}),
             ("账本", _check_ledger, {"cfg": cfg, "sample": sample}),

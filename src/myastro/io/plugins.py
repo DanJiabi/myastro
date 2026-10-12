@@ -44,6 +44,8 @@ class _State:
     discovered: bool = False
     loaded: list[str] = field(default_factory=list)
     errors: list[PluginError] = field(default_factory=list)
+    # 源名 → 提供它的插件模块（发现时按"导入前后新增的注册表键"归属）
+    origins: dict[str, str] = field(default_factory=dict)
 
 
 _STATE = _State()
@@ -149,6 +151,7 @@ def discover(*, force: bool = False) -> None:
         if probed is not None:
             _STATE.errors.append(probed)
             continue
+        before = _registry_names()
         try:
             _load_one(module, attr)
         except Exception as exc:              # noqa: BLE001  插件缺陷必须被隔离
@@ -157,6 +160,8 @@ def discover(*, force: bool = False) -> None:
             _STATE.errors.append(PluginError(
                 module, type(exc).__name__, str(exc)[:300], hint))
             continue
+        for name in _registry_names() - before:
+            _STATE.origins[name] = module      # 新注册的源归这个插件
         _STATE.loaded.append(module)
 
 
@@ -179,11 +184,32 @@ def errors() -> list[PluginError]:
     return list(_STATE.errors)
 
 
+def _registry_names() -> set[str]:
+    from ..descriptors import REGISTRY
+
+    return set(REGISTRY)
+
+
+def origin_of(source: str) -> str:
+    """源的来源标注：`builtin` / `plugin:<模块>` / `runtime`（显式注册）。
+
+    为什么需要：装了几个插件之后，用户与 doctor 都要能回答"这个源是谁提供的"。
+    `runtime` 指插件机制之外显式 `register_source` 注册的源（例如 notebook 里临时加的）。
+    """
+    from ..descriptors import BUILTIN_SOURCES
+
+    if source in BUILTIN_SOURCES:
+        return "builtin"
+    module = _STATE.origins.get(source)
+    return f"plugin:{module}" if module else "runtime"
+
+
 def _reset_for_tests() -> None:
     """测试专用：清空发现状态（下一个用例可重新发现）。"""
     _STATE.discovered = False
     _STATE.loaded.clear()
     _STATE.errors.clear()
+    _STATE.origins.clear()
 
 
 def env_entries() -> list[str]:

@@ -3,6 +3,22 @@
 本文件记录对使用者有影响的变更。格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [0.5.1] - 2026-10-12
+
+### 新增
+
+- **插件状态可见**（插件协议 v1 的 2b）：
+  - `myastro doctor` 新增「插件（可选）」检查：列出已加载插件；**每个失败插件一条警告**，
+    带异常类型、原因与修复建议（挂死插件报 `ProbeTimeout`，doctor 本身照常返回）；
+  - `myastro.sources()` 每项新增 `origin` 字段：`builtin` / `plugin:<模块>` / `runtime`
+    （后者指插件机制之外显式注册的源，例如 notebook 里临时加的）。
+- 理由：发现机制已经把插件失败隔离住了，但**用户看不见**——等于把失败静默吞掉；
+  来源标注则回答「这个源是谁提供的」。
+
+### 说明（你需要做什么）
+
+- 无需改动。按名取 `sources()` 字段的调用方不受影响；新增字段可直接用于展示或过滤。
+
 ## [0.5.0] - 2026-10-12
 
 ### 新增
@@ -368,3 +384,4 @@
 [0.4.2]: https://github.com/DanJiabi/myastro/releases/tag/v0.4.2
 [0.4.3]: https://github.com/DanJiabi/myastro/releases/tag/v0.4.3
 [0.5.0]: https://github.com/DanJiabi/myastro/releases/tag/v0.5.0
+[0.5.1]: https://github.com/DanJiabi/myastro/releases/tag/v0.5.1

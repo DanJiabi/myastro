@@ -1,7 +1,7 @@
 # 插件协议 v1：给 myastro 加数据源
 
-> 状态：**注册契约（批次 1）与自动发现（批次 2a）均已落地**。装好插件包即自动生效，
-> 不需要用户写 `import`。`doctor` 里的插件状态展示与 `sources()` 的来源标注属批次 2b，尚未实现。
+> 状态：**注册契约（批次 1）、自动发现（2a）与状态可见性（2b）均已落地**。装好插件包即自动生效，
+> 不需要用户写 `import`；`myastro doctor` 会报告插件加载状态与失败原因，`sources()` 标注来源。
 > 契约变更记录见 `docs/zh/dev/contract-changelog.md`；变更流程见 `docs/zh/dev/change-policy.md`。
 
 ## 1. 目标
@@ -110,7 +110,7 @@ ma.register_source(ma.SourceDescriptor(
 | 批次 | 内容 | 状态 |
 |---|---|---|
 | 2a（L3） | **自动发现**：entry-points + `MYASTRO_SOURCES` + 子进程预探测隔离 + 惰性触发 + 恢复兜底 | **已完成** |
-| 2b | `doctor` 展示插件状态、`sources()` 标注来源（内置/插件） | 待做 |
+| 2b | `doctor` 展示插件状态与失败原因、`sources()` 标注来源 | **已完成** |
 | 3 | 仓库内示例插件包 + CI 安装并端到端取一次 | **已完成** |
 
 ### 批次 2a：自动发现（0.5.0 起）
@@ -138,6 +138,19 @@ export MYASTRO_SOURCES=my_plugin,another_plugin:register
   作业可能是另一个进程创建的。
 - **错误可见**：失败插件记一条结构化记录（模块名/异常类型/摘要/建议），由 `doctor` 与
   `sources()` 呈现（批次 2b 接入展示层；现在可用 `myastro.io.plugins.errors()` 读取）。
+
+### 批次 2b：状态可见性（0.5.1 起）
+
+- **`myastro doctor`** 新增「插件（可选）」检查：列出已加载插件；**每个失败插件单独一条 WARN**，
+  带异常类型、原因与修复建议（例如协议版本不符会指向本页）。挂死插件报 `ProbeTimeout`，
+  但 doctor 本身照常返回——「失败必须可见」与「失败不能拖垮核心」两件事同时成立。
+- **`myastro.sources()`** 每一项新增 `origin` 字段：
+
+  | 取值 | 含义 |
+  |---|---|
+  | `builtin` | myastro 内置源 |
+  | `plugin:<模块>` | 由该插件包提供（发现时按「导入前后新增的注册表键」归属） |
+  | `runtime` | 插件机制之外显式 `register_source` 注册的源（例如 notebook 里临时加的） |
 
 **信任模型不变**：安装第三方插件 = 信任其代码（预探测只挡"挂死/导入即崩"，
 不是沙箱）。见 `SECURITY.md`。

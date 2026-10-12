@@ -66,12 +66,14 @@ def query(source: str, /, **params) -> dict[str, Any]:
 
 def sources() -> list[dict[str, Any]]:
     """源清单（描述符摘要）。**这里触发一次插件发现**（惰性：不在 import 时做）。"""
-    from .io.plugins import ensure_discovered
+    from .io.plugins import ensure_discovered, origin_of
     from .io.sources import STATUS
 
     ensure_discovered()
     return [{"name": d.name, "desc": d.desc,
              "status": STATUS[d.status], "product": d.product,
+             # 来源标注：builtin / plugin:<模块> / runtime（显式注册）——见 plugins.origin_of
+             "origin": origin_of(d.name),
              "orderable": bool(d.task or d.url_key),
              "fields": [{"name": f.name, "type": f.type.__name__,
                          "default": f.default,
