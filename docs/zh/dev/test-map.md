@@ -4,12 +4,12 @@
 
 能力 id 定义在 `src/myastro/io/testmap.py`；能力说明与成熟度见 [capabilities.md](capabilities.md)。
 
-共 25 项能力、1450 个测试。
+共 25 项能力、1475 个测试。
 
 | 能力 | 说明 | 测试数 |
 |---|---|---|
 | `source.registry` | 源注册表与描述符：接入声明、示例参数、漂移守卫 | 43 |
-| `source.contract` | 单源实现契约：参数校验、落盘、入库、空结果 | 118 |
+| `source.contract` | 单源实现契约：参数校验、落盘、入库、空结果 | 143 |
 | `source.health` | 源健康探测与状态覆盖（ok/degraded/unreachable） | 18 |
 | `source.dormant` | 休眠源防腐烂（asassn：后端失联期间保持正确） | 2 |
 | `acquire.fetch` | 单件获取：缓存短路、原子落盘、入库、aria2 对账 | 29 |
@@ -138,6 +138,31 @@
 - `tests/kernel/test_plugin_contract.py::test_plugin_does_not_perturb_guards_or_snapshot`
 - `tests/kernel/test_plugin_contract.py::test_plugin_does_not_perturb_guards_or_snapshot`
 - `tests/kernel/test_plugin_contract.py::test_plugin_does_not_perturb_guards_or_snapshot`
+- `tests/kernel/test_plugin_discovery.py::TestContract::test_constants_are_the_documented_contract`
+- `tests/kernel/test_plugin_discovery.py::TestContract::test_discover_is_idempotent`
+- `tests/kernel/test_plugin_discovery.py::TestContract::test_empty_by_default_without_plugins`
+- `tests/kernel/test_plugin_discovery.py::TestContract::test_error_record_shape`
+- `tests/kernel/test_plugin_discovery.py::TestContract::test_views_are_read_only_copies`
+- `tests/kernel/test_plugin_discovery.py::TestEnvParsing::test_does_not_trigger_discovery`
+- `tests/kernel/test_plugin_discovery.py::TestEnvParsing::test_empty_when_unset`
+- `tests/kernel/test_plugin_discovery.py::TestEnvParsing::test_parses_list_and_ignores_blanks`
+- `tests/kernel/test_plugin_discovery.py::TestLazyWiring::test_cli_main_triggers_discovery`
+- `tests/kernel/test_plugin_discovery.py::TestLazyWiring::test_cli_parser_includes_plugin_source_after_discovery`
+- `tests/kernel/test_plugin_discovery.py::TestLazyWiring::test_descriptor_lookup_triggers_discovery`
+- `tests/kernel/test_plugin_discovery.py::TestLazyWiring::test_import_myastro_does_not_discover`
+- `tests/kernel/test_plugin_discovery.py::TestLazyWiring::test_sources_triggers_discovery`
+- `tests/kernel/test_plugin_discovery.py::TestLoader::test_attr_form_invokes_register_function`
+- `tests/kernel/test_plugin_discovery.py::TestLoader::test_bad_env_format_is_tolerated`
+- `tests/kernel/test_plugin_discovery.py::TestLoader::test_duplicate_module_listed_twice_loads_once`
+- `tests/kernel/test_plugin_discovery.py::TestLoader::test_entry_points_channel_is_supported`
+- `tests/kernel/test_plugin_discovery.py::TestLoader::test_hanging_plugin_is_isolated_by_probe`
+- `tests/kernel/test_plugin_discovery.py::TestLoader::test_import_error_is_recorded`
+- `tests/kernel/test_plugin_discovery.py::TestLoader::test_loads_plugin_from_env_var`
+- `tests/kernel/test_plugin_discovery.py::TestLoader::test_missing_module_is_recorded_not_raised`
+- `tests/kernel/test_plugin_discovery.py::TestLoader::test_registration_error_is_recorded_with_hint`
+- `tests/kernel/test_plugin_discovery.py::TestRecoveryFallback::test_resolve_fn_recovers_plugin_task`
+- `tests/kernel/test_plugin_discovery.py::TestRecoveryFallback::test_resolve_fn_still_raises_when_task_truly_missing`
+- `tests/kernel/test_plugin_discovery.py::TestUnresolvableTask::test_missing_task_marks_job_failed_instead_of_killing_thread`
 - `tests/sources/test_asassn.py::test_service_unreachable_gives_concise_actionable_error`
 - `tests/sources/test_asassn.py::test_service_unreachable_gives_concise_actionable_error`
 - `tests/sources/test_asassn.py::test_service_unreachable_gives_concise_actionable_error`

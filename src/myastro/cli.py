@@ -396,7 +396,11 @@ def main(argv: list[str] | None = None) -> int:
     对"第三个客户端"（脚本/第三方）而言，退出码是可编程契约的一部分。
     """
     from . import errors
+    from .io.plugins import ensure_discovered
 
+    # 先发现插件再建解析器：`fetch <源>` 子命令是按注册表动态生成的，
+    # 晚于此处发现的话，插件源在 CLI 里根本没有子命令。
+    ensure_discovered()
     args = _build_parser().parse_args(argv)
     if args.cmd == "top":
         try:

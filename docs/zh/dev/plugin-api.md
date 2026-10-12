@@ -1,7 +1,7 @@
 # 插件协议 v1：给 myastro 加数据源
 
-> 状态：**批次 1 已落地**（注册契约 + 校验 + 测试）。发现机制（entry-points 自动加载）
-> 属批次 2，**尚未实现**——现在需要在插件包被导入时显式调用注册 API。
+> 状态：**注册契约（批次 1）与自动发现（批次 2a）均已落地**。装好插件包即自动生效，
+> 不需要用户写 `import`。`doctor` 里的插件状态展示与 `sources()` 的来源标注属批次 2b，尚未实现。
 > 契约变更记录见 `docs/zh/dev/contract-changelog.md`；变更流程见 `docs/zh/dev/change-policy.md`。
 
 ## 1. 目标
@@ -109,8 +109,38 @@ ma.register_source(ma.SourceDescriptor(
 
 | 批次 | 内容 | 状态 |
 |---|---|---|
-| 2（L3） | entry-points 组 `myastro.sources` 自动发现 + `MYASTRO_SOURCES` 开发用环境变量 + 加载失败由 `doctor` 报告（不拖垮 CLI/TUI） | 待设计 |
+| 2a（L3） | **自动发现**：entry-points + `MYASTRO_SOURCES` + 子进程预探测隔离 + 惰性触发 + 恢复兜底 | **已完成** |
+| 2b | `doctor` 展示插件状态、`sources()` 标注来源（内置/插件） | 待做 |
 | 3 | 仓库内示例插件包 + CI 安装并端到端取一次 | **已完成** |
+
+### 批次 2a：自动发现（0.5.0 起）
+
+**装好即用**：插件包在 `pyproject.toml` 里声明 entry point 即可，用户不需要写任何 `import`：
+
+```toml
+[project.entry-points."myastro.sources"]
+mysurvey = "my_package.mysurvey"     # 值是模块名；也可写 `模块:注册函数`（可调用则被调用）
+```
+
+本机开发（未打包）用环境变量：
+
+```bash
+export MYASTRO_SOURCES=my_plugin,another_plugin:register
+```
+
+设计要点（细节见 `src/myastro/io/plugins.py` 的模块文档）：
+
+- **惰性**：`import myastro` **不**触发发现；由需要源清单的入口触发一次并缓存
+  （`sources()`、按源名查表、`cli.main()` 建解析器之前、以及 runner 的任务解析兜底）。
+- **隔离**：先在本进程之外**预探测**（子进程 `import` + 超时），import 阶段挂死/崩溃的插件
+  被记为错误并跳过，**不影响主进程**（子进程按结构化标记回报异常类型，诊断精度不减）。
+- **恢复兜底**：作业的具名任务若在当前进程的表里找不到，会触发一次发现再解析——
+  作业可能是另一个进程创建的。
+- **错误可见**：失败插件记一条结构化记录（模块名/异常类型/摘要/建议），由 `doctor` 与
+  `sources()` 呈现（批次 2b 接入展示层；现在可用 `myastro.io.plugins.errors()` 读取）。
+
+**信任模型不变**：安装第三方插件 = 信任其代码（预探测只挡"挂死/导入即崩"，
+不是沙箱）。见 `SECURITY.md`。
 
 ### 批次 3：可运行的参考示例
 

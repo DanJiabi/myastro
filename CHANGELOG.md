@@ -3,6 +3,33 @@
 本文件记录对使用者有影响的变更。格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [0.5.0] - 2026-10-12
+
+### 新增
+
+- **插件自动发现**（插件协议 v1 的第三块）：装好插件包即生效，**用户不再需要写 `import`**。
+  - 正式通道：entry-points 组 `myastro.sources`（`mysurvey = "my_package.mysurvey"`，
+    也支持 `模块:注册函数`）；本机开发用 `MYASTRO_SOURCES=mod1,mod2:attr`。
+  - **惰性**：`import myastro` 不触发发现；由 `sources()`、按源名查表、`cli.main()`
+    建解析器之前、以及 runner 的任务解析兜底触发一次并缓存。
+  - **隔离**：先在本进程之外**子进程预探测**（import + 超时），挂死/导入即崩的插件被记成
+    错误并跳过，**不影响主进程**；子进程以结构化标记回报异常类型，诊断精度不减。
+  - **恢复兜底**：作业的具名任务在当前进程表里找不到时会触发一次发现再解析
+    （作业可能是另一个进程创建的）。
+  - 加载失败留结构化记录（模块名/异常类型/摘要/建议）；展示层（`doctor`、`sources()` 来源标注）
+    属 0.5.1。
+
+### 修复
+
+- **任务解析失败会拖死工作线程**：解析原本在 `_run_job` 的 `try` 之外，插件缺失/模块损坏时
+  线程带异常退出，作业永远停在 `running`（只能靠孤儿巡检兜底）。现在解析在 try 内，
+  落成**作业失败**（附回归测试与变异验证）。
+
+### 说明（你需要做什么）
+
+- 之前按文档写 `import myastro_example_source` 的用法**仍然可用**（显式导入无害）；
+  现在可以直接 `myastro fetch <你的源>`。示例插件包的 README 已同步更新。
+
 ## [0.4.3] - 2026-10-12
 
 ### 新增
@@ -340,3 +367,4 @@
 [0.4.1]: https://github.com/DanJiabi/myastro/releases/tag/v0.4.1
 [0.4.2]: https://github.com/DanJiabi/myastro/releases/tag/v0.4.2
 [0.4.3]: https://github.com/DanJiabi/myastro/releases/tag/v0.4.3
+[0.5.0]: https://github.com/DanJiabi/myastro/releases/tag/v0.5.0

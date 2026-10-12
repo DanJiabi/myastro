@@ -10,7 +10,7 @@
 pip install -e examples/myastro-source-example
 
 python - <<'PY'
-import myastro_example_source        # 触发注册（批次 2 之前需要显式导入）
+# 不需要 import 插件：entry-points 自动发现（0.5.0 起）
 import myastro as ma
 
 print("源列表可见:", "demo" in {s["name"] for s in ma.sources()})
@@ -20,10 +20,10 @@ print("可检索:", bool(ma.search(source="demo")))
 PY
 ```
 
-CLI 同样可用（需先 `import myastro_example_source`，见 `docs/plugin-api.md` §8 的现状说明）：
+CLI 同样可用（发现是自动的）：
 
 ```bash
-python -c "import myastro_example_source" && myastro fetch demo --target M31
+myastro fetch demo --target M31
 ```
 
 ## 这个示例刻意演示的约束

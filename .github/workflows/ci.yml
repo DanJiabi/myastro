@@ -84,10 +84,11 @@ jobs:
           export MYASTRO_DATA="$RUNNER_TEMP/data" MYASTRO_DB="$RUNNER_TEMP/astro.db"
           myastro init
           python - <<'PY'
-          import myastro_example_source          # 触发注册（批次 2 之前需显式导入）
+          # **不显式 import 插件**：示例包通过 entry-points（myastro.sources）自动发现，
+          # 这也是发现机制（批次 2）的端到端证明。
           import myastro as ma
 
-          assert "demo" in {s["name"] for s in ma.sources()}, "示例源未出现在源列表"
+          assert "demo" in {s["name"] for s in ma.sources()}, "插件未被自动发现"
           result = ma.fetch("demo", target="M31")
           assert result.paths[0].exists(), "示例未落盘"
           assert result.dataset_id > 0, "示例未入账本"

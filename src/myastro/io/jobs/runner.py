@@ -22,6 +22,25 @@ from .spec import (
 from .store import _lookup_cached, _register_success
 
 
+def _resolve_fn(spec: JobSpec):
+    """按名解析 python 执行器的任务函数（含**插件恢复兜底**）。
+
+    为什么需要兜底：插件任务只在插件被导入后才存在于 `TASKS`。作业可能是
+    **另一个进程**（或本进程更早、插件发现之前）创建的，直接查表会 KeyError。
+    这里先查表，缺失时触发一次插件发现再查；仍缺失才把 KeyError 抛出去
+    （错误语义不变，只是多给了一次机会）。
+    """
+    from ...tasks import TASKS  # myastro.tasks（深度+1）
+
+    try:
+        return TASKS[spec.task]
+    except KeyError:
+        from ..plugins import ensure_discovered
+
+        ensure_discovered()
+        return TASKS[spec.task]
+
+
 def _run_job(db_path: Path, job_id: int, spec: JobSpec, key: str) -> None:
     db = DB(db_path).init()
     slot = _DEFAULT_SESSION.put(job_id, spec)
@@ -48,11 +67,11 @@ def _run_job(db_path: Path, job_id: int, spec: JobSpec, key: str) -> None:
     hb.start()
     ctx = RunContext(source=spec.source, params=spec.params,
                      dest_dir=_dest_dir(spec), cfg=Config())
-    fn = spec.fn
-    if fn is None and spec.task is not None:
-        from ...tasks import TASKS  # myastro.tasks（深度+1）
-        fn = TASKS[spec.task]          # 具名任务：跨进程可恢复
     try:
+        # 解析放在 try 内：解析失败（例如插件没装/模块坏了）必须落成**作业失败**，
+        # 否则工作线程会带着异常直接退出，作业永远停在 running（只能靠孤儿巡检兜底）。
+        fn = spec.fn if spec.fn is not None else (
+            _resolve_fn(spec) if spec.task is not None else None)
         result = fn(ctx)
         dataset_id = _register_success(db, spec, key, job_id, result)
         db.conn.execute(

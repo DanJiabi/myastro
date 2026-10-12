@@ -30,6 +30,9 @@ def _map_job_failure(exc: Exception) -> Exception:
 
 
 def _descriptor(name: str) -> SourceDescriptor:
+    from .io.plugins import ensure_discovered
+
+    ensure_discovered()          # 惰性：按源名查表前才触发插件发现
     d = REGISTRY.get(name)
     if d is None:
         raise errors.ParamError(f"未知源 {name!r}（可用: {sorted(REGISTRY)}）")
@@ -62,8 +65,11 @@ def query(source: str, /, **params) -> dict[str, Any]:
 
 
 def sources() -> list[dict[str, Any]]:
-    """源清单（描述符摘要）。"""
+    """源清单（描述符摘要）。**这里触发一次插件发现**（惰性：不在 import 时做）。"""
+    from .io.plugins import ensure_discovered
     from .io.sources import STATUS
+
+    ensure_discovered()
     return [{"name": d.name, "desc": d.desc,
              "status": STATUS[d.status], "product": d.product,
              "orderable": bool(d.task or d.url_key),
