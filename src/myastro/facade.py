@@ -9,7 +9,13 @@ from typing import Any
 from . import errors
 from .descriptors import REGISTRY, SourceDescriptor
 from .io import jobs
-from .io.jobs import FetchResult
+from .io.core import write_parquet
+from .io.jobs import FetchResult, RunContext
+
+# 插件协议 v1 的对外面：插件任务**必须**返回 FetchResult、接收 RunContext、
+# 并用统一落盘（write_parquet 内含原子替换与 pyarrow 线程规避）。
+# 这里引用一次既是声明意图，也让 linter 不再把它们当"未使用"。
+PLUGIN_EXPORTS = (write_parquet, FetchResult, RunContext)
 
 _NETWORK_ERRORS = {"ConnectionError", "TimeoutError", "HTTPError",
                    "URLError", "SSLError", "ConnectTimeout", "ReadTimeout"}

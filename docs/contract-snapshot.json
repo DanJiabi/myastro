@@ -201,6 +201,31 @@
     "StateError": 5
   },
   "facade_api": {
+    "FetchResult": {
+      "kind": "type",
+      "params": {
+        "cache_hit": [
+          "POSITIONAL_OR_KEYWORD",
+          "False",
+          "bool"
+        ],
+        "dataset_id": [
+          "POSITIONAL_OR_KEYWORD",
+          null,
+          "int"
+        ],
+        "meta": [
+          "POSITIONAL_OR_KEYWORD",
+          "<factory>",
+          "dict[str, Any]"
+        ],
+        "paths": [
+          "POSITIONAL_OR_KEYWORD",
+          null,
+          "list[Path]"
+        ]
+      }
+    },
     "FieldSpec": {
       "kind": "type",
       "params": {
@@ -293,6 +318,31 @@
           "VAR_KEYWORD",
           null,
           ""
+        ]
+      }
+    },
+    "RunContext": {
+      "kind": "type",
+      "params": {
+        "cfg": [
+          "POSITIONAL_OR_KEYWORD",
+          null,
+          "Config"
+        ],
+        "dest_dir": [
+          "POSITIONAL_OR_KEYWORD",
+          null,
+          "Path"
+        ],
+        "params": [
+          "POSITIONAL_OR_KEYWORD",
+          null,
+          "dict[str, Any]"
+        ],
+        "source": [
+          "POSITIONAL_OR_KEYWORD",
+          null,
+          "str"
         ]
       }
     },
@@ -698,6 +748,21 @@
           "VAR_KEYWORD",
           null,
           ""
+        ]
+      }
+    },
+    "write_parquet": {
+      "kind": "function",
+      "params": {
+        "df": [
+          "POSITIONAL_OR_KEYWORD",
+          null,
+          ""
+        ],
+        "path": [
+          "POSITIONAL_OR_KEYWORD",
+          null,
+          "str | os.PathLike"
         ]
       }
     }

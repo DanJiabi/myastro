@@ -24,6 +24,8 @@
 验收测试：`tests/kernel/test_plugin_contract.py::test_plugin_does_not_perturb_guards_or_snapshot`
 （注册插件后快照字节不变）。
 
+| 2026-10-12 | **0.4.1** | 插件作者公开面 | 新增公开导出 `write_parquet` / `FetchResult` / `RunContext`（`__all__` 34 → 37）；`facade.PLUGIN_EXPORTS` 声明这三者 | **0.4.0 实测缺陷**：协议要求任务返回 `FetchResult`、用统一落盘，但这三个名字当时没有公开，`docs/plugin-api.md` 的示例照着写在已安装的 wheel 上直接失败（`module 'myastro' has no attribute 'write_parquet'`） | 纯新增；无破坏性变化 | `tests/kernel/test_plugin_contract.py::test_plugin_doc_example_uses_public_api_only`（解析文档里的 `ma.<名>` 是否都在 `__all__`，变异验证可红）+ 端到端改用纯公开 API |
+
 ## 快照机制的建立（2026-10-11）
 
 - 生成器 `src/myastro/contract.py`（顶层模块——放 `io/` 会违反分层：内核不许依赖 `cli`）。

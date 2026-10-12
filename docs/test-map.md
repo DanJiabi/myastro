@@ -4,12 +4,12 @@
 
 能力 id 定义在 `src/myastro/io/testmap.py`；能力说明与成熟度见 [capabilities.md](capabilities.md)。
 
-共 25 项能力、1432 个测试。
+共 25 项能力、1443 个测试。
 
 | 能力 | 说明 | 测试数 |
 |---|---|---|
 | `source.registry` | 源注册表与描述符：接入声明、示例参数、漂移守卫 | 43 |
-| `source.contract` | 单源实现契约：参数校验、落盘、入库、空结果 | 103 |
+| `source.contract` | 单源实现契约：参数校验、落盘、入库、空结果 | 114 |
 | `source.health` | 源健康探测与状态覆盖（ok/degraded/unreachable） | 18 |
 | `source.dormant` | 休眠源防腐烂（asassn：后端失联期间保持正确） | 2 |
 | `acquire.fetch` | 单件获取：缓存短路、原子落盘、入库、aria2 对账 | 29 |
@@ -112,6 +112,17 @@
 - `tests/kernel/test_plugin_contract.py::TestTaskRegistration::test_refuses_to_shadow_builtin_task`
 - `tests/kernel/test_plugin_contract.py::TestTaskRegistration::test_rejects_bad_name`
 - `tests/kernel/test_plugin_contract.py::TestTaskRegistration::test_rejects_non_callable`
+- `tests/kernel/test_plugin_contract.py::test_plugin_doc_example_uses_public_api_only`
+- `tests/kernel/test_plugin_contract.py::test_plugin_doc_example_uses_public_api_only`
+- `tests/kernel/test_plugin_contract.py::test_plugin_doc_example_uses_public_api_only`
+- `tests/kernel/test_plugin_contract.py::test_plugin_doc_example_uses_public_api_only`
+- `tests/kernel/test_plugin_contract.py::test_plugin_doc_example_uses_public_api_only`
+- `tests/kernel/test_plugin_contract.py::test_plugin_doc_example_uses_public_api_only`
+- `tests/kernel/test_plugin_contract.py::test_plugin_doc_example_uses_public_api_only`
+- `tests/kernel/test_plugin_contract.py::test_plugin_doc_example_uses_public_api_only`
+- `tests/kernel/test_plugin_contract.py::test_plugin_doc_example_uses_public_api_only`
+- `tests/kernel/test_plugin_contract.py::test_plugin_doc_example_uses_public_api_only`
+- `tests/kernel/test_plugin_contract.py::test_plugin_doc_example_uses_public_api_only`
 - `tests/kernel/test_plugin_contract.py::test_plugin_does_not_perturb_guards_or_snapshot`
 - `tests/kernel/test_plugin_contract.py::test_plugin_does_not_perturb_guards_or_snapshot`
 - `tests/kernel/test_plugin_contract.py::test_plugin_does_not_perturb_guards_or_snapshot`

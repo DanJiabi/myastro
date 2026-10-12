@@ -3,6 +3,25 @@
 本文件记录对使用者有影响的变更。格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [0.4.1] - 2026-10-12
+
+### 修复
+
+- **插件作者必需的三个名字没有公开**（0.4.0 实测缺陷）：按 `docs/plugin-api.md` 写的插件
+  在**已安装的 wheel** 上直接失败 `module 'myastro' has no attribute 'write_parquet'`。
+  插件协议要求任务返回 `FetchResult`、接收 `RunContext`、并用统一落盘
+  （`write_parquet` 内含原子替换与 pyarrow 线程规避），但这三者当时都藏在
+  `myastro.io.*` 里——而协议又禁止插件导入内核私有模块。
+  现在 `__all__` 新增 `write_parquet` / `FetchResult` / `RunContext`（34 → 37 项）。
+  既有用户无需改动。
+
+### 测试
+
+- `test_plugin_doc_example_uses_public_api_only`：**把文档变成可执行契约**——解析
+  `docs/plugin-api.md` 里出现的每个 `ma.<名>`，断言都在 `__all__` 内，并禁止示例代码
+  导入 `myastro.io.*`（变异验证：把文档改成引用私有名即红）。
+- 插件端到端测试改用**纯公开 API**（此前用内部导入，因此本地全绿却漏掉了这个缺陷）。
+
 ## [0.4.0] - 2026-10-11
 
 ### 新增
@@ -268,3 +287,4 @@
 [0.3.4]: https://github.com/DanJiabi/myastro/releases/tag/v0.3.4
 [0.3.5]: https://github.com/DanJiabi/myastro/releases/tag/v0.3.5
 [0.4.0]: https://github.com/DanJiabi/myastro/releases/tag/v0.4.0
+[0.4.1]: https://github.com/DanJiabi/myastro/releases/tag/v0.4.1

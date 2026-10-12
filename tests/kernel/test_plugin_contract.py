@@ -16,7 +16,6 @@ from myastro.descriptors import (
     SourceDescriptor,
     validate_descriptor,
 )
-from myastro.io.jobs import FetchResult
 from myastro.tasks import BUILTIN_TASKS, TASKS
 
 
@@ -33,16 +32,20 @@ def _desc(**over) -> SourceDescriptor:
     return SourceDescriptor(**base)
 
 
-def _synth_task(ctx) -> FetchResult:
-    """离线合成任务：写一个真 parquet 到 dest_dir 并返回路径。"""
+def _synth_task(ctx: ma.RunContext) -> ma.FetchResult:
+    """离线合成任务：写一个真 parquet 到 dest_dir 并返回路径。
+
+    **只用公开 API**（`ma.write_parquet` / `ma.FetchResult`）——与
+    `docs/plugin-api.md` 的示例一致。真实教训：0.4.0 发布后，按文档写的插件在
+    已安装的 wheel 上直接失败（`module 'myastro' has no attribute 'write_parquet'`），
+    因为当时的测试用的是内部导入路径，本地全绿。
+    """
     import pandas as pd
 
-    from myastro.io.core import write_parquet
-
     dest = ctx.dest_dir / "synth.parquet"
-    write_parquet(pd.DataFrame({"x": [1, 2, 3], "target": [ctx.params["target"]] * 3}),
-                  dest)
-    return FetchResult(paths=[dest], dataset_id=0, meta={"n": 3})
+    ma.write_parquet(pd.DataFrame({"x": [1, 2, 3],
+                                   "target": [ctx.params["target"]] * 3}), dest)
+    return ma.FetchResult(paths=[dest], dataset_id=0, meta={"n": 3})
 
 
 @pytest.fixture
@@ -246,3 +249,26 @@ def test_plugin_does_not_perturb_guards_or_snapshot(env, clean_registries):
     assert set(builtin_registry()) == before_descriptors
     assert set(BUILTIN_TASKS) == before_tasks
     assert not contract.problems()
+
+
+@pytest.mark.cap("source.contract")
+def test_plugin_doc_example_uses_public_api_only():
+    """`docs/plugin-api.md` 里出现的 `ma.<名>` 必须都是公开导出。
+
+    真实教训（0.4.0 发布后实测）：文档示例用了 `ma.write_parquet`，但它当时**没有公开**
+    （藏在 `myastro.io.core`），于是按文档写的插件在已安装的 wheel 上直接失败：
+    `module 'myastro' has no attribute 'write_parquet'`。
+    本地测试全绿，因为测试自己走的是内部导入路径——文档与测试各说各话。
+    这条守卫把"文档里的公开名"变成机检事实。
+    """
+    import pathlib
+    import re
+
+    text = pathlib.Path("docs/plugin-api.md").read_text()
+    used = set(re.findall(r"\bma\.([A-Za-z_][A-Za-z0-9_]*)", text))
+    assert used, "文档里没有出现任何 ma.<名>（示例被删了？）"
+    missing = sorted(n for n in used if n not in ma.__all__)
+    assert not missing, f"docs/plugin-api.md 引用了非公开名: {missing}"
+
+    code = "\n".join(re.findall(r"```python\n(.*?)```", text, re.DOTALL))
+    assert "from myastro.io" not in code, "示例代码不得导入内核私有模块（myastro.io.*）"

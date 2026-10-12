@@ -21,20 +21,23 @@ ma.register_source(ma.SourceDescriptor(...))          # ② 源描述符（表�
 ## 2. 最小可用插件
 
 ```python
-"""my_survey.py —— 一个离线可测的示例插件。"""
-from pathlib import Path
+"""my_survey.py —— 一个离线可测的示例插件。
 
+只用公开 API：`ma.FetchResult` / `ma.RunContext` / `ma.write_parquet` /
+`ma.register_task` / `ma.register_source` / `ma.FieldSpec` / `ma.SourceDescriptor`。
+**
+不要**导入 `myastro.io.*`（内核私有，随时可能变）。
+"""
 import myastro as ma
-from myastro.io.jobs import FetchResult
 
 
-def my_fetch_fn(ctx) -> FetchResult:
+def my_fetch_fn(ctx: ma.RunContext) -> ma.FetchResult:
     """ctx: RunContext(source, params, dest_dir, cfg)。落盘必须写在 ctx.dest_dir 内。"""
     import pandas as pd
 
     dest = ctx.dest_dir / f"{ctx.params['target']}.parquet"
     ma.write_parquet(pd.DataFrame({"x": [1, 2, 3]}), dest)   # 走统一落盘（见 processing §8.8）
-    return FetchResult(paths=[dest], dataset_id=0, meta={"n": 3})
+    return ma.FetchResult(paths=[dest], dataset_id=0, meta={"n": 3})
 
 
 ma.register_task("mysurvey_fetch", my_fetch_fn)
