@@ -3,6 +3,39 @@
 本文件记录对使用者有影响的变更。格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [0.5.2] - 2026-10-13
+
+### 新增
+
+- **`myastro describe <源>`**：单源详细中文描述（内容/前置条件/注意事项/示例参数）。
+  `SourceDescriptor` 新增可选字段 `detail`，10 个内置源已逐一撰写；TUI 新建作业屏的
+  源下拉下方新增**详情面板**（切换即更新）；`sources()` 字段字典新增 `optional` 键。
+- **`myastro version`**：版本身份块（版本 + 账本 schema v8 + API schema v1 +
+  Python/平台/安装位置/数据根），报 bug 时可直接贴；TUI 顶栏常驻版本号。
+- **`myastro preview <路径|#数据集id>`** 与 `ma.preview()`：本地数据文件快速预览——
+  **按内容嗅探**（parquet 魔数 / FITS 魔数 / **gzip 包裹的 FITS 如 `.src` 索引源文件**），
+  parquet 给概要+schema+前 8 行+NaN 占比，FITS 给头部信息卡+表/图像统计，文本给前 N 行；
+  TUI 作业面板 `p` 键预览选中数据集的首个文件。
+
+### 修复
+
+- **幽灵数据集防线**（真实账本事故）：取数成功却"有 dataset 无文件"。
+  ① `mpc` 文件名编码点数与步长（`eph_{target}_n{N}_s{S}d.parquet`）——此前不同参数
+  共用文件名互相覆盖；② `gaia` 锥搜文件名编码 columns 短哈希（默认列保持旧名，向后兼容）；
+  ③ `audit` 新增 **unlinked** 类别：无文件且非空结果的数据集计入报告并影响退出码。
+- **`lc.transit_search` 恒星参数**：点值不再被 TLS 拒绝（其 `M_star_max` 默认恰好 1.0，
+  超太阳质量的星如 WASP-12 会报错）——点值按 ±10% 展开为区间，另支持
+  `(value, min, max)` 三元组显式给区间。
+- **测试套件会话级沙箱**：任何测试都不可能再写入用户的默认账本
+  （此前一条漏挂 fixture 的测试把幽灵作业写进了真账本）。
+- **TUI 版本号真正显示**：此前被动态状态行覆盖，且验收测试只断言类属性没发现。
+- ztf-lc 一句话描述修正："IRSA 凭据" → "匿名可用"（过期信息）。
+
+### 说明（你需要做什么）
+
+- 无强制改动。`describe` / `version` / `preview` 三个新命令直接可用；
+  `ma.preview(...)`、`SourceDescriptor.detail` 对插件作者同样开放（可选）。
+
 ## [0.5.1] - 2026-10-12
 
 ### 新增
@@ -385,3 +418,4 @@
 [0.4.3]: https://github.com/DanJiabi/myastro/releases/tag/v0.4.3
 [0.5.0]: https://github.com/DanJiabi/myastro/releases/tag/v0.5.0
 [0.5.1]: https://github.com/DanJiabi/myastro/releases/tag/v0.5.1
+[0.5.2]: https://github.com/DanJiabi/myastro/releases/tag/v0.5.2

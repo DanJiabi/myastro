@@ -38,6 +38,15 @@ def column_widths(cols, rows, cap: int = COL_WIDTH_CAP) -> list[int]:
     return widths
 
 
+def _pkg_version() -> str:
+    """版本号：走包元数据（不导入包根——守卫禁止 io/top 导入私有符号）。"""
+    from importlib.metadata import PackageNotFoundError, version
+    try:
+        return version("myastro")
+    except PackageNotFoundError:
+        return "0.0.0+dev"
+
+
 class AstroTop(App):
     TITLE = "myastro top"
     DEFAULT_CSS = """
@@ -55,6 +64,7 @@ class AstroTop(App):
         ("x", "cancel", "取消(aria2)"),
         ("s", "sort", "排序"),
         ("f", "filter", "过滤"),
+        ("p", "preview", "预览"),
         ("f1", "new_job", "新建下载"),
         ("f2", "new_job_prefill", "预填充下载"),
         ("f12", "batch", "批量下单"),
@@ -196,8 +206,8 @@ class AstroTop(App):
         jobs_pane = PANES.get("jobs")
         if self._pane_name == "jobs" and jobs_pane.filter_mode != "all":
             extra = f" | 过滤: {jobs_pane.filter_mode}"
-        text = (f"面板: {pane.label}{extra} | aria2 daemon: "
-                f"{'在线' if aria2.ping() else '离线'}")
+        text = (f"v{_pkg_version()} | 面板: {pane.label}{extra} | "
+                f"aria2 daemon: {'在线' if aria2.ping() else '离线'}")
         if text != self.sub_title:
             self.sub_title = text
 
@@ -370,6 +380,35 @@ class AstroTop(App):
             return
         if type(pane).drill is not Pane.drill:    # 子类实现了下钻
             pane.drill(self, key)
+
+    def action_preview(self) -> None:
+        """p：预览选中作业/数据集的首个文件（parquet/FITS/文本嗅探）。"""
+        if self._pane_name != "jobs":
+            self.notify("预览仅在作业面板可用")
+            return
+        key = self._selected_key()
+        pane = PANES.get("jobs")
+        job = pane.selected_job(key) if (pane and key) else None
+        path = None
+        if job and job.get("dataset_id"):
+            from ..db import DB
+            db = DB().init()
+            row = db.conn.execute(
+                "SELECT path FROM files WHERE dataset_id=? LIMIT 1",
+                (job["dataset_id"],)).fetchone()
+            db.close()
+            path = row["path"] if row else None
+        if not path:
+            self.notify("选中项没有文件可预览")
+            return
+        try:
+            from ..preview import preview as _preview
+            from ..preview import render_text
+            doc = _preview(path)
+        except Exception as e:                      # noqa: BLE001
+            self.notify(f"预览失败: {e}", severity="error")
+            return
+        self.query_one("#detail", Static).update(render_text(doc))
 
     def action_retry(self) -> None:
         pane = self._pane()

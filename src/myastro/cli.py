@@ -78,17 +78,80 @@ def _cmd_fetch(args, db) -> int:
     return 0
 
 
+def _cmd_preview(args, db) -> int:
+    import myastro as ma
+    from myastro.io.preview import preview as _preview
+    from myastro.io.preview import render_text
+    target = args.target
+    if target.startswith("#"):
+        doc_dict = ma.preview(target, lines=args.lines)     # 账本解析（含错误映射）
+        from myastro.io.preview import PreviewDoc, Section
+        doc = PreviewDoc(path=doc_dict["path"], kind=doc_dict["kind"],
+                         size=doc_dict["size"],
+                         sections=[Section(title=s["title"], lines=s["lines"],
+                                           table=s["table"])
+                                  for s in doc_dict["sections"]])
+    else:
+        doc = _preview(target, lines=args.lines)
+    print(render_text(doc))
+    return 0
+
+
+def _cmd_describe(args, db) -> int:
+    import myastro as ma
+    d = ma.describe(args.source)
+    print(f"{d['name']}（{d['origin']}）｜{d['status']}｜{d['desc']}")
+    if d["detail"]:
+        print()
+        print(d["detail"])
+    print()
+    print("参数：")
+    for f in d["fields"]:
+        if f["default"] is not None:
+            note = f"（默认 {f['default']}）"
+        elif f.get("optional"):
+            note = "（可空）"
+        else:
+            note = "（必填）"
+        print(f"  {f['name']:16} {f['type']:7} {note}")
+    if d["example_params"]:
+        print()
+        print(f"示例：{d['example_params']}")
+    return 0
+
+
+def _cmd_version(args, db) -> int:
+    import platform
+
+    import myastro as ma
+    from myastro.io.config import Config
+    from myastro.io.db import SCHEMA_VERSION as _DB_SCHEMA
+    print(f"myastro {ma.__version__}"
+          f"（账本 schema v{_DB_SCHEMA}｜API schema v{ma.SCHEMA_VERSION}）")
+    print(f"Python {platform.python_version()} | {platform.system()} {platform.machine()}")
+    print(f"安装位置：{ma.__file__}")
+    cfg = Config()
+    print(f"数据根：{cfg.data}｜账本：{cfg.db}")
+    print("环境自检请用 `myastro doctor`；源清单 `myastro fetch --help`。")
+    return 0
+
+
 def _cmd_audit(args, db) -> int:
     import myastro as ma
     r = ma.audit()
     print(f"核对 {r['total']}：ok {r['ok']} | 基线新建 {r['baselined']} | "
           f"缺失 {r['missing']} | 尺寸不符 {r['size_mismatch']} | "
-          f"损坏 {r['corrupt']}")
+          f"损坏 {r['corrupt']} | 无文件数据集 {r['unlinked']}")
     for kind in ("missing", "size_mismatch", "corrupt"):
         for item in (__import__("myastro.io.integrity", fromlist=["x"])
                      .audit_detail(kind, limit=10)):
             print(f"  [{kind}] {item['path']} ({item['why']})")
-    return 0 if (r["missing"] + r["size_mismatch"] + r["corrupt"]) == 0 else 1
+    for item in (__import__("myastro.io.integrity", fromlist=["x"])
+                 .audit_detail("unlinked", limit=10)):
+        print(f"  [unlinked] 数据集 #{item['dataset_id']} "
+              f"{item['source']}/{item['target']}（{item['why']}）")
+    return 0 if (r["missing"] + r["size_mismatch"] + r["corrupt"]
+                 + r["unlinked"]) == 0 else 1
 
 
 def _cmd_search(args, db) -> int:
@@ -341,6 +404,16 @@ def _build_parser() -> argparse.ArgumentParser:
     p_health = sub.add_parser("health", help="源健康探测")
     p_health.add_argument("source", nargs="?", default=None)
     p_health.set_defaults(fn=_cmd_health)
+    from .descriptors import REGISTRY as _REG
+    p_prev = sub.add_parser("preview", help="预览本地数据文件（parquet/FITS/文本）")
+    p_prev.add_argument("target", help="文件路径，或 #数据集id")
+    p_prev.add_argument("--lines", type=int, default=8, help="预览行数（默认 8）")
+    p_prev.set_defaults(fn=_cmd_preview)
+    sub.add_parser("describe", help="单源详细描述（中文）"
+                   ).add_argument("source", choices=sorted(_REG))
+    sub.choices["describe"].set_defaults(fn=_cmd_describe)
+    sub.add_parser("version", help="版本与环境身份块"
+                   ).set_defaults(fn=_cmd_version)
     p_audit = sub.add_parser("audit", help="完整性巡检（sha 基线+核对）")
     p_audit.set_defaults(fn=_cmd_audit)
     p_search = sub.add_parser("search", help="本地检索已有数据")

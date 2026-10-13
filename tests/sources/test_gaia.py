@@ -62,3 +62,32 @@ class TestGaia:
             ).fetchone()["c"]
             == 1
         )
+
+
+@pytest.mark.cap("source.contract")
+def test_gaia_custom_columns_do_not_collide_with_default(env, monkeypatch):
+    """默认列与自定义列的同位置锥搜必须落到不同文件（真实事故：账本 #3 幽灵）。
+
+    #3（含 columns 参数）与 #36（同坐标同半径、无 columns）共用了同一个
+    `cone_*.parquet` 文件名 → 后到者把文件据为己有，#3 成为无文件幽灵。
+    """
+    import pandas as pd
+
+    import myastro.io.sources.gaia as g
+
+    monkeypatch.setattr(
+        g, "_download_gaia",
+        lambda ra, dec, r, columns=None: (
+            pd.DataFrame({"ra": [ra]}), {"ra": ra, "n_rows": 1}),
+    )
+    from myastro.io import jobs
+
+    jobs._DEFAULT_SESSION.clear()
+    a = g.gaia_cone(97.142, 30.493, 0.02)                       # 默认列
+    jobs._DEFAULT_SESSION.clear()
+    b = g.gaia_cone(97.142, 30.493, 0.02,                       # 自定义列
+                    columns=["source_id", "ra", "dec"])
+    assert a.paths[0] != b.paths[0], "columns 不同必须落到不同文件"
+    assert b.paths[0].name.startswith("cone_97.1420_+30.4930_r0.02_c")
+    # 向后兼容：默认列仍用旧文件名（既有缓存继续命中）
+    assert a.paths[0].name == "cone_97.1420_+30.4930_r0.02.parquet"

@@ -135,7 +135,7 @@ health    (source PRIMARY KEY, status, detail, checked_at)     -- v5
 | mpc | MPC 小行星/彗星星历（Horizons 替代） | ✅ 可用 | python · astroquery.mpc | astroquery.mpc | parquet | — |
 | simbad | SIMBAD 锥搜：天区目标认证 | ✅ 可用 | python · astroquery.simbad | astroquery.simbad | parquet | — |
 | vizier | VizieR 任意发表星表锥检 | ✅ 可用 | python · astroquery.vizier | astroquery.vizier | parquet | — |
-| ztf-lc | ZTF 光变曲线（IRSA 凭据） | ✅ 可用 | python · ztfquery.lightcurve | ztfquery.lightcurve | parquet | — |
+| ztf-lc | ZTF 光变曲线（匿名可用） | ✅ 可用 | python · ztfquery.lightcurve | ztfquery.lightcurve | parquet | — |
 | horizons | JPL Horizons 星历 | ❌ 不可达 | python · — | — | — | — |
 | （规划未实现，3 项） | | | | | | |
 | panstarrs | Pan-STARRS DR2 stack cutout（MAST URL） | 未实现 | — | — | — | — |

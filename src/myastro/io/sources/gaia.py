@@ -25,10 +25,20 @@ def _download_gaia(ra: float, dec: float, radius: float, columns=None):
 
 def _fn(ctx) -> FetchResult:
     p = ctx.params
-    df, meta = _download_gaia(p["ra"], p["dec"], p["radius_deg"],
-                              p.get("columns"))
+    cols = p.get("columns")
+    df, meta = _download_gaia(p["ra"], p["dec"], p["radius_deg"], cols)
+    # 文件名必须编码影响内容的参数：columns 不同 = 内容不同。
+    # 真实事故（账本 #3）：同坐标同半径、不同 columns 的两次查询共用一个文件名，
+    # 后到者把文件据为己有，先到者成了"有 dataset 无文件"的幽灵。
+    # 默认列保持旧文件名（向后兼容既有缓存）。
+    suffix = ""
+    if cols is not None and tuple(cols) != _DEFAULT_COLS:
+        import hashlib
+        import json
+        suffix = "_c" + hashlib.sha1(
+            json.dumps(list(cols)).encode()).hexdigest()[:6]
     dest = (ctx.dest_dir /
-            f"cone_{p['ra']:.4f}_{p['dec']:+.4f}_r{p['radius_deg']}.parquet")
+            f"cone_{p['ra']:.4f}_{p['dec']:+.4f}_r{p['radius_deg']}{suffix}.parquet")
     write_parquet(df, dest)
     return FetchResult(paths=[dest], dataset_id=-1, meta=meta)
 

@@ -76,6 +76,7 @@ class SourceDescriptor:
     task: str | None = None                      # python 执行器：TASKS 键
     url_key: str | None = None                   # aria2 执行器：URL_SOURCES 键
     example_params: dict = field(default_factory=dict)   # 完整合法参数示例
+    detail: str = ""                           # 详细中文描述（describe 子命令 / TUI 详情面板）
     # ── 插件协议 v1（内置源一律用默认值，行为不变）──
     api_version: int = PLUGIN_API_VERSION        # 插件声明的协议版本
     requires: list[str] = field(default_factory=list)    # 依赖模块名（doctor 报告）
@@ -290,13 +291,15 @@ REGISTRY: dict[str, SourceDescriptor] = {d.name: d for d in [
         FieldSpec("cadence", str, default="2m",
                   choices=("2m", "20s", "10m", "30m")),
     ], task="tess_lightcurve",
-       example_params={"target": "WASP-12", "sector": 20, "cadence": "2m"}),
+       example_params={"target": "WASP-12", "sector": 20, "cadence": "2m"},
+       detail='TESS/Kepler/K2 光变曲线（lightkurve/MAST）→ parquet（time/flux/pdcsap_flux/quality 等全列）。\n前置：无需账号；target 经 SIMBAD 解析为坐标。\n注意：凌星/周期分析请用 pdcsap_flux（管线已校正），不要直接用 SAP；quality≠0 的行须筛除。\n典型用法：先取 2m 快巡，需要短周期再换 20s。'),
     _d("gaia", [
         FieldSpec("ra", float, label="赤经 (deg)"),
         FieldSpec("dec", float, label="赤纬 (deg)"),
         FieldSpec("radius_deg", float, default=0.05),
     ], task="gaia_cone",
-       example_params={"ra": 286.6583, "dec": 0.8656, "radius_deg": 0.02}),
+       example_params={"ra": 286.6583, "dec": 0.8656, "radius_deg": 0.02},
+       detail='Gaia DR3 锥形星表切片（TAP/ADQL）→ parquet（默认列：source_id/ra/dec/parallax/自行/G/BP/RP；columns 可自定义）。\n前置：无需账号；Gaia 归档正处 DR4 过渡期，偶发超时，重试即可。\n注意：文件名含 columns 短哈希——不同列组合是不同数据集；半径上限 5°。'),
     _d("ztf-meta", [
         FieldSpec("field", int, index="ztf-fields"),
         FieldSpec("filtercode", str, default="zg", choices=("zg", "zr", "zi")),
@@ -306,7 +309,8 @@ REGISTRY: dict[str, SourceDescriptor] = {d.name: d for d in [
         FieldSpec("jd_max", float, default=2461000),
     ], task="ztf_metadata",
        example_params={"field": 673, "filtercode": "zg", "ccdid": 1,
-                       "qid": 1, "jd_min": 2458800, "jd_max": 2458900}),
+                       "qid": 1, "jd_min": 2458800, "jd_max": 2458900},
+       detail='ZTF sci 帧元数据（IRSA ibe 匿名 API）→ parquet：视宁度/历元/文件号等。\n用途：下载整帧（~37MB/帧）之前先查"云端有什么、质量如何"——这是评估历元覆盖的入口。\n前置：无需账号（匿名 ibe）。'),
     _d("ztf", [
         FieldSpec("ffd", str, label="filefracday 14 位", name_like=True),
         FieldSpec("field", int, index="ztf-fields"),
@@ -314,19 +318,22 @@ REGISTRY: dict[str, SourceDescriptor] = {d.name: d for d in [
         FieldSpec("ccdid", int, default=1),
         FieldSpec("qid", int, default=1),
     ], example_params={"ffd": "20200219403889", "field": 673,
-                       "filtercode": "zg", "ccdid": 1, "qid": 1}),
+                       "filtercode": "zg", "ccdid": 1, "qid": 1},
+       detail='ZTF sci 图像帧下载（IRSA ibe 匿名）→ FITS（~37MB/帧）。\n参数：ffd（field/filter/ccd/quadrant/文件号）或文件名——同一帧的两种说法，账本按文件名归一。\n前置：无需账号；大文件经 aria2 下载。'),
     _d("mpc", [
         FieldSpec("target", str, label="目标名/编号（Ceres, 1）", name_like=True),
         FieldSpec("number", int, default=10, label="步数"),
         FieldSpec("step_days", float, default=1.0, label="步长（天）"),
     ], task="mpc_ephemeris",
-       example_params={"target": "Ceres", "number": 10, "step_days": 1.0}),
+       example_params={"target": "Ceres", "number": 10, "step_days": 1.0},
+       detail='MPC 小行星/彗星星历（astroquery.mpc，JPL Horizons 的可达替代）→ parquet（Date/RA/Dec/Delta/r/V 等）。\n前置：无需账号。\n注意：文件名编码点数与步长（eph_{目标}_n{N}_s{S}d.parquet）；星历从查询时刻起算。'),
     _d("simbad", [
         FieldSpec("ra", float),
         FieldSpec("dec", float),
         FieldSpec("radius_deg", float, default=0.1),
     ], task="simbad_cone",
-       example_params={"ra": 180.0, "dec": 0.0, "radius_deg": 0.1}),
+       example_params={"ra": 180.0, "dec": 0.0, "radius_deg": 0.1},
+       detail='SIMBAD 锥搜与目标认证（名字 → 坐标 → 账本）。\n前置：无需账号。\n注意：账本入库时即解析坐标存 ra/dec，本地检索（search/coverage）依赖它。'),
     _d("vizier", [
         FieldSpec("catalog", str, label="星表号（如 II/246）"),
         FieldSpec("ra", float),
@@ -334,17 +341,20 @@ REGISTRY: dict[str, SourceDescriptor] = {d.name: d for d in [
         FieldSpec("radius_deg", float, default=0.1),
     ], task="vizier_cone",
        example_params={"catalog": "II/246", "ra": 150.0, "dec": 2.0,
-                       "radius_deg": 0.2}),
+                       "radius_deg": 0.2},
+       detail='VizieR 任意已发表星表的锥形检索（CDS）。\n参数：catalog 为星表编号（如 II/246）。\n前置：无需账号。'),
     _d("ztf-lc", [
         FieldSpec("ra", float),
         FieldSpec("dec", float),
         FieldSpec("radius_arcsec", float, default=5.0,
                   label="锥半径（角秒），单源建议 ≤5"),
     ], task="ztf_lightcurve",
-       example_params={"ra": 97.2, "dec": 30.4, "radius_arcsec": 8}),
+       example_params={"ra": 97.2, "dec": 30.4, "radius_arcsec": 8},
+       detail='ZTF 光变曲线（IRSA 原生 LC API，**匿名可用，无需 IRSA 账号**）→ parquet。\n说明：早期"需 IRSA 凭据"的说法已过时——实测无 ~/.ztfquery 的干净环境可用。\n注意：坐标锥搜（radius_arcsec），查询点与真实源偏差过大会返回空\n（实测 r=5″ 未命中、r=8″ 命中）——拿不到就先放大半径。'),
     _d("legacy", [FieldSpec("brick", str, label="brick 名", index="legacy-bricks",
                             pattern=r"^[0-9a-z]{8}$")],
-       example_params={"brick": "0001m002"}),
+       example_params={"brick": "0001m002"},
+       detail='Legacy Surveys DR10 tractor 星表的 brick 切片（NERSC 匿名 HTTP）→ FITS（~22MB/块）。\n前置：先 `myastro index update legacy-bricks`（104 MB 公共索引，含全部 brick 名与覆盖）。\n注意：DR10 portal 仅有 south/ 目录；brick 名为 8 位（如 0001m002）。'),
     _d("unwise", [
         FieldSpec("ra", float),
         FieldSpec("dec", float),
@@ -352,7 +362,8 @@ REGISTRY: dict[str, SourceDescriptor] = {d.name: d for d in [
         FieldSpec("band", str, default="w1", choices=("w1", "w2"),
                   label="波段（服务端不支持合并）"),
     ], task="unwise_cutout",
-       example_params={"ra": 180.0, "dec": 0.0, "size": 300, "band": "w1"}),
+       example_params={"ra": 180.0, "dec": 0.0, "size": 300, "band": "w1"},
+       detail='unWISE 中红外（W1/W2）叠加切片（NERSC）→ FITS 图像。\n参数：size 为切片边长（像素），band 为 w1/w2。\n注意：服务端不支持波段合并，需逐波段分别请求。'),
 ]}
 
 # 内置源名单：**守卫与契约快照只绑这些**——用户装了插件不该让 pytest/--check 变红。

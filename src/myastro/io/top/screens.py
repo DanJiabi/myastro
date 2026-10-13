@@ -67,6 +67,8 @@ class NewJobScreen(ModalScreen):
                     [("自定义 URL", self.CUSTOM)]
                     + [(f"{d.desc}", k) for k, d in REGISTRY.items()],
                     value=self.source_key, id="source")
+            # 选中源的详细中文描述（detail 字段；自定义 URL 给提示）
+            yield Static(self._source_detail_text(), id="source-detail")
             yield Vertical(id="fields")
             yield Static("", id="preview")
 
@@ -99,8 +101,16 @@ class NewJobScreen(ModalScreen):
         self.call_after_refresh(
             lambda: self.query_one(target).focus())
 
+    def _source_detail_text(self) -> str:
+        if self.source_key == self.CUSTOM or self.source_key not in REGISTRY:
+            return "自定义 URL：直接给下载地址，适合一次性抓取。"
+        detail = REGISTRY[self.source_key].detail
+        return detail or REGISTRY[self.source_key].desc
+
     async def on_select_changed(self, event) -> None:
         self.source_key = str(event.value)
+        self.query_one("#source-detail", Static).update(
+            self._source_detail_text())
         await self._render_fields()
 
     async def _render_fields(self) -> None:

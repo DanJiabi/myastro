@@ -49,3 +49,25 @@ def _mk(env, monkeypatch, content=b"DATA", sha=None):
     )
     db.conn.commit()
     return db, f
+
+
+@pytest.mark.cap("manage.integrity")
+def test_audit_unlinked_dataset(env):
+    """有 dataset 无文件且非空结果 → audit 报 unlinked（真实事故 #39/#27 的防线）。"""
+    from myastro.io.db import DB
+    from myastro.io.integrity import audit, audit_detail
+
+    db = DB().init()
+    db.conn.execute(
+        "INSERT INTO datasets(source,target,params_json,cache_key,meta_json)"
+        " VALUES('mpc','Ceres','{}','k1',NULL)")
+    db.conn.execute(
+        "INSERT INTO datasets(source,target,params_json,cache_key,meta_json)"
+        " VALUES('ztf-lc','','{}','k2','{\"empty\": true}')")
+    db.conn.commit()
+
+    r = audit(db=db)
+    assert r["unlinked"] == 1, "只有无文件且非空结果的数据集才算 unlinked"
+    detail = audit_detail("unlinked")
+    assert len(detail) == 1 and detail[0]["source"] == "mpc"
+    assert detail[0]["dataset_id"]

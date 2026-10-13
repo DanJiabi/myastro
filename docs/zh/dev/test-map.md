@@ -4,12 +4,12 @@
 
 能力 id 定义在 `src/myastro/io/testmap.py`；能力说明与成熟度见 [capabilities.md](capabilities.md)。
 
-共 25 项能力、1483 个测试。
+共 25 项能力、1582 个测试。
 
 | 能力 | 说明 | 测试数 |
 |---|---|---|
-| `source.registry` | 源注册表与描述符：接入声明、示例参数、漂移守卫 | 43 |
-| `source.contract` | 单源实现契约：参数校验、落盘、入库、空结果 | 151 |
+| `source.registry` | 源注册表与描述符：接入声明、示例参数、漂移守卫 | 45 |
+| `source.contract` | 单源实现契约：参数校验、落盘、入库、空结果 | 173 |
 | `source.health` | 源健康探测与状态覆盖（ok/degraded/unreachable） | 18 |
 | `source.dormant` | 休眠源防腐烂（asassn：后端失联期间保持正确） | 2 |
 | `acquire.fetch` | 单件获取：缓存短路、原子落盘、入库、aria2 对账 | 29 |
@@ -19,20 +19,20 @@
 | `acquire.cancel` | 取消与作业记录删除（资产保留） | 3 |
 | `acquire.manifest` | 清单（YAML）批量获取 | 2 |
 | `acquire.schedule` | 定时任务（launchd 代理的生成与装卸） | 4 |
-| `manage.ledger` | 账本：schema/迁移、缓存身份、meta 溯源、原子写 | 43 |
-| `manage.integrity` | 完整性巡检：sha 基线、损坏与缺失检测 | 11 |
+| `manage.ledger` | 账本：schema/迁移、缓存身份、meta 溯源、原子写 | 67 |
+| `manage.integrity` | 完整性巡检：sha 基线、损坏与缺失检测 | 32 |
 | `manage.search` | 本地检索（目标/坐标/时间） | 31 |
 | `manage.coverage` | 索引覆盖率统计 | 6 |
 | `manage.index` | 索引构建与浏览（builder/url 两类来源） | 16 |
-| `process.lc` | 时序处理工具：归一化、折叠、周期搜索、凌星搜索 | 20 |
-| `present.tui` | TUI 行为：面板、键位、身份寻址、格式化 | 749 |
-| `present.cli` | CLI 行为：子命令参数接线、输出与退出码 | 27 |
+| `process.lc` | 时序处理工具：归一化、折叠、周期搜索、凌星搜索 | 21 |
+| `present.tui` | TUI 行为：面板、键位、身份寻址、格式化 | 769 |
+| `present.cli` | CLI 行为：子命令参数接线、输出与退出码 | 29 |
 | `ci.config` | CI 工作流配置（可解析性/结构） | 16 |
 | `manage.doctor` | 环境自检：依赖/路径可写/账本/文件系统/索引/平台 | 15 |
 | `manage.backup` | 账本备份与恢复：在线备份、默认拒绝覆盖、安全副本 | 23 |
-| `facade.api` | 门面契约：错误分类、参数校验、执行器隐身 | 3 |
+| `facade.api` | 门面契约：错误分类、参数校验、执行器隐身 | 6 |
 | `design.contract` | 契约快照（门面 API/CLI/退出码/schema/注册表） | 24 |
-| `design.guards` | 设计守卫：文档同步、边界规则、能力覆盖 | 217 |
+| `design.guards` | 设计守卫：文档同步、边界规则、能力覆盖 | 221 |
 
 ## 能力 → 测试明细
 
@@ -51,6 +51,8 @@
 - `tests/guards/test_descriptor_contract.py::test_descriptors_cover_sources`
 - `tests/guards/test_descriptor_contract.py::test_descriptors_cover_sources`
 - `tests/guards/test_descriptor_contract.py::test_descriptors_cover_sources`
+- `tests/guards/test_descriptor_contract.py::test_descriptors_cover_sources`
+- `tests/guards/test_descriptor_contract.py::test_register_source_extension_point`
 - `tests/guards/test_descriptor_contract.py::test_register_source_extension_point`
 - `tests/guards/test_descriptor_contract.py::test_register_source_extension_point`
 - `tests/guards/test_descriptor_contract.py::test_register_source_extension_point`
@@ -84,6 +86,15 @@
 
 ### `source.contract` — 单源实现契约：参数校验、落盘、入库、空结果
 
+- `tests/guards/test_descriptor_contract.py::test_builtin_sources_have_nontrivial_detail`
+- `tests/guards/test_descriptor_contract.py::test_builtin_sources_have_nontrivial_detail`
+- `tests/guards/test_descriptor_contract.py::test_builtin_sources_have_nontrivial_detail`
+- `tests/guards/test_descriptor_contract.py::test_builtin_sources_have_nontrivial_detail`
+- `tests/guards/test_descriptor_contract.py::test_builtin_sources_have_nontrivial_detail`
+- `tests/guards/test_descriptor_contract.py::test_builtin_sources_have_nontrivial_detail`
+- `tests/guards/test_descriptor_contract.py::test_builtin_sources_have_nontrivial_detail`
+- `tests/guards/test_descriptor_contract.py::test_builtin_sources_have_nontrivial_detail`
+- `tests/guards/test_descriptor_contract.py::test_builtin_sources_have_nontrivial_detail`
 - `tests/kernel/test_example_plugin.py::TestExamplePlugin::test_example_declares_entry_point_for_batch2`
 - `tests/kernel/test_example_plugin.py::TestExamplePlugin::test_example_only_uses_public_api`
 - `tests/kernel/test_example_plugin.py::TestExamplePlugin::test_fetches_offline_and_lands_in_ledger`
@@ -184,12 +195,25 @@
 - `tests/sources/test_exoplanet.py::TestSolutionSelection::test_unknown_planet_raises`
 - `tests/sources/test_gaia.py::TestGaia::test_fn_writes_parquet_and_registers`
 - `tests/sources/test_gaia.py::TestGaia::test_radius_validation`
+- `tests/sources/test_gaia.py::test_gaia_custom_columns_do_not_collide_with_default`
+- `tests/sources/test_gaia.py::test_gaia_custom_columns_do_not_collide_with_default`
+- `tests/sources/test_gaia.py::test_gaia_custom_columns_do_not_collide_with_default`
+- `tests/sources/test_gaia.py::test_gaia_custom_columns_do_not_collide_with_default`
+- `tests/sources/test_gaia.py::test_gaia_custom_columns_do_not_collide_with_default`
+- `tests/sources/test_gaia.py::test_gaia_custom_columns_do_not_collide_with_default`
+- `tests/sources/test_gaia.py::test_gaia_custom_columns_do_not_collide_with_default`
 - `tests/sources/test_gaia.py::test_gaia_without_columns`
 - `tests/sources/test_gaia.py::test_gaia_without_columns`
 - `tests/sources/test_gaia.py::test_gaia_without_columns`
 - `tests/sources/test_gaia.py::test_gaia_without_columns`
 - `tests/sources/test_gaia.py::test_gaia_without_columns`
 - `tests/sources/test_gaia.py::test_gaia_without_columns`
+- `tests/sources/test_gaia.py::test_gaia_without_columns`
+- `tests/sources/test_mpc.py::test_mpc_different_params_do_not_collide`
+- `tests/sources/test_mpc.py::test_mpc_different_params_do_not_collide`
+- `tests/sources/test_mpc.py::test_mpc_different_params_do_not_collide`
+- `tests/sources/test_mpc.py::test_mpc_different_params_do_not_collide`
+- `tests/sources/test_mpc.py::test_mpc_registers_parquet`
 - `tests/sources/test_mpc.py::test_mpc_registers_parquet`
 - `tests/sources/test_mpc.py::test_mpc_registers_parquet`
 - `tests/sources/test_mpc.py::test_mpc_registers_parquet`
@@ -353,6 +377,30 @@
 
 ### `manage.ledger` — 账本：schema/迁移、缓存身份、meta 溯源、原子写
 
+- `tests/guards/test_suite_isolation.py::test_data_root_env_var_points_into_sandbox`
+- `tests/guards/test_suite_isolation.py::test_data_root_env_var_points_into_sandbox`
+- `tests/guards/test_suite_isolation.py::test_data_root_env_var_points_into_sandbox`
+- `tests/guards/test_suite_isolation.py::test_data_root_env_var_points_into_sandbox`
+- `tests/guards/test_suite_isolation.py::test_data_root_env_var_points_into_sandbox`
+- `tests/guards/test_suite_isolation.py::test_data_root_env_var_points_into_sandbox`
+- `tests/guards/test_suite_isolation.py::test_data_root_env_var_points_into_sandbox`
+- `tests/guards/test_suite_isolation.py::test_data_root_env_var_points_into_sandbox`
+- `tests/guards/test_suite_isolation.py::test_ledger_env_var_points_into_sandbox`
+- `tests/guards/test_suite_isolation.py::test_ledger_env_var_points_into_sandbox`
+- `tests/guards/test_suite_isolation.py::test_ledger_env_var_points_into_sandbox`
+- `tests/guards/test_suite_isolation.py::test_ledger_env_var_points_into_sandbox`
+- `tests/guards/test_suite_isolation.py::test_ledger_env_var_points_into_sandbox`
+- `tests/guards/test_suite_isolation.py::test_ledger_env_var_points_into_sandbox`
+- `tests/guards/test_suite_isolation.py::test_ledger_env_var_points_into_sandbox`
+- `tests/guards/test_suite_isolation.py::test_ledger_env_var_points_into_sandbox`
+- `tests/guards/test_suite_isolation.py::test_resolved_db_path_is_sandboxed`
+- `tests/guards/test_suite_isolation.py::test_resolved_db_path_is_sandboxed`
+- `tests/guards/test_suite_isolation.py::test_resolved_db_path_is_sandboxed`
+- `tests/guards/test_suite_isolation.py::test_resolved_db_path_is_sandboxed`
+- `tests/guards/test_suite_isolation.py::test_resolved_db_path_is_sandboxed`
+- `tests/guards/test_suite_isolation.py::test_resolved_db_path_is_sandboxed`
+- `tests/guards/test_suite_isolation.py::test_resolved_db_path_is_sandboxed`
+- `tests/guards/test_suite_isolation.py::test_resolved_db_path_is_sandboxed`
 - `tests/kernel/test_db.py::TestConfig::test_env_override`
 - `tests/kernel/test_db.py::TestConfig::test_init_idempotent`
 - `tests/kernel/test_db.py::TestConfig::test_source_dir`
@@ -405,11 +453,32 @@
 - `tests/kernel/test_integrity.py::test_audit_baseline_then_corrupt`
 - `tests/kernel/test_integrity.py::test_audit_baseline_then_corrupt`
 - `tests/kernel/test_integrity.py::test_audit_baseline_then_corrupt`
+- `tests/kernel/test_integrity.py::test_audit_baseline_then_corrupt`
 - `tests/kernel/test_integrity.py::test_audit_missing`
 - `tests/kernel/test_integrity.py::test_audit_missing`
 - `tests/kernel/test_integrity.py::test_audit_missing`
 - `tests/kernel/test_integrity.py::test_audit_missing`
 - `tests/kernel/test_integrity.py::test_audit_missing`
+- `tests/kernel/test_integrity.py::test_audit_missing`
+- `tests/kernel/test_integrity.py::test_audit_unlinked_dataset`
+- `tests/kernel/test_integrity.py::test_audit_unlinked_dataset`
+- `tests/kernel/test_integrity.py::test_audit_unlinked_dataset`
+- `tests/kernel/test_integrity.py::test_audit_unlinked_dataset`
+- `tests/kernel/test_integrity.py::test_audit_unlinked_dataset`
+- `tests/kernel/test_integrity.py::test_audit_unlinked_dataset`
+- `tests/kernel/test_preview.py::TestFits::test_gzip_wrapped_src`
+- `tests/kernel/test_preview.py::TestFits::test_image_header_card_and_stats`
+- `tests/kernel/test_preview.py::TestFits::test_table_hdu`
+- `tests/kernel/test_preview.py::TestParquet::test_doc_sections`
+- `tests/kernel/test_preview.py::TestParquet::test_missing_file_raises`
+- `tests/kernel/test_preview.py::TestSniff::test_fits_by_magic_and_gzip_wrapped`
+- `tests/kernel/test_preview.py::TestSniff::test_parquet_by_magic`
+- `tests/kernel/test_preview.py::TestSniff::test_text_and_unknown`
+- `tests/kernel/test_preview.py::test_text_preview`
+- `tests/kernel/test_preview.py::test_text_preview`
+- `tests/kernel/test_preview.py::test_text_preview`
+- `tests/kernel/test_preview.py::test_text_preview`
+- `tests/kernel/test_preview.py::test_text_preview`
 
 ### `manage.search` — 本地检索（目标/坐标/时间）
 
@@ -481,6 +550,7 @@
 - `tests/unit/test_lc.py::TestPeriodSearch::test_sine_recovery`
 - `tests/unit/test_lc.py::TestStellarParams::test_params_are_forwarded_when_given`
 - `tests/unit/test_lc.py::TestStellarParams::test_real_run_with_stellar_params_is_warning_free`
+- `tests/unit/test_lc.py::TestStellarParams::test_real_run_with_super_solar_mass`
 - `tests/unit/test_lc.py::TestTransforms::test_bin_phase_empty_bins_nan`
 - `tests/unit/test_lc.py::TestTransforms::test_bin_phase_matches_convention`
 - `tests/unit/test_lc.py::TestTransforms::test_clip_range`
@@ -688,6 +758,16 @@
 - `tests/ui/test_index_hints.py::test_no_index_hint_for_sources_without_index`
 - `tests/ui/test_index_hints.py::test_no_index_hint_for_sources_without_index`
 - `tests/ui/test_index_hints.py::test_no_index_hint_for_sources_without_index`
+- `tests/ui/test_preview_key.py::test_p_key_previews_selected_file`
+- `tests/ui/test_preview_key.py::test_p_key_previews_selected_file`
+- `tests/ui/test_preview_key.py::test_p_key_previews_selected_file`
+- `tests/ui/test_preview_key.py::test_p_key_previews_selected_file`
+- `tests/ui/test_preview_key.py::test_p_key_previews_selected_file`
+- `tests/ui/test_preview_key.py::test_p_key_without_file_notifies`
+- `tests/ui/test_preview_key.py::test_p_key_without_file_notifies`
+- `tests/ui/test_preview_key.py::test_p_key_without_file_notifies`
+- `tests/ui/test_preview_key.py::test_p_key_without_file_notifies`
+- `tests/ui/test_preview_key.py::test_p_key_without_file_notifies`
 - `tests/ui/test_refresh.py::test_changed_data_repaints_once`
 - `tests/ui/test_refresh.py::test_changed_data_repaints_once`
 - `tests/ui/test_refresh.py::test_changed_data_repaints_once`
@@ -786,6 +866,16 @@
 - `tests/ui/test_refresh.py::test_unchanged_data_produces_no_frames`
 - `tests/ui/test_refresh.py::test_unchanged_data_produces_no_frames`
 - `tests/ui/test_refresh.py::test_unchanged_data_produces_no_frames`
+- `tests/ui/test_source_detail.py::test_header_shows_version`
+- `tests/ui/test_source_detail.py::test_header_shows_version`
+- `tests/ui/test_source_detail.py::test_header_shows_version`
+- `tests/ui/test_source_detail.py::test_header_shows_version`
+- `tests/ui/test_source_detail.py::test_header_shows_version`
+- `tests/ui/test_source_detail.py::test_source_detail_panel_follows_selection`
+- `tests/ui/test_source_detail.py::test_source_detail_panel_follows_selection`
+- `tests/ui/test_source_detail.py::test_source_detail_panel_follows_selection`
+- `tests/ui/test_source_detail.py::test_source_detail_panel_follows_selection`
+- `tests/ui/test_source_detail.py::test_source_detail_panel_follows_selection`
 - `tests/ui/test_suggest.py::TestIndexSuggester::test_empty_value_yields_none`
 - `tests/ui/test_suggest.py::TestIndexSuggester::test_exact_key_yields_none`
 - `tests/ui/test_suggest.py::TestIndexSuggester::test_missing_index_degrades_silently`
@@ -1251,9 +1341,11 @@
 ### `present.cli` — CLI 行为：子命令参数接线、输出与退出码
 
 - `tests/cli/test_cli.py::TestDoctorInitBackupRestore::test_backup_then_restore_round_trip`
+- `tests/cli/test_cli.py::TestDoctorInitBackupRestore::test_describe_and_version`
 - `tests/cli/test_cli.py::TestDoctorInitBackupRestore::test_doctor_exit_1_on_failure`
 - `tests/cli/test_cli.py::TestDoctorInitBackupRestore::test_doctor_ok_in_clean_env`
 - `tests/cli/test_cli.py::TestDoctorInitBackupRestore::test_init_creates_paths`
+- `tests/cli/test_cli.py::TestDoctorInitBackupRestore::test_preview_command`
 - `tests/cli/test_cli.py::TestDoctorInitBackupRestore::test_restore_without_force_fails_cleanly`
 - `tests/cli/test_cli.py::TestErrorExitCodes::test_healthy_delete_is_refused_with_partial_code`
 - `tests/cli/test_cli.py::TestErrorExitCodes::test_invalid_task_rejected_by_argparse`
@@ -1346,6 +1438,9 @@
 - `tests/facade/test_facade.py::TestFacadeE0::test_coerce_and_choices`
 - `tests/facade/test_facade.py::TestFacadeE0::test_param_error_mapping`
 - `tests/facade/test_facade.py::TestQueryBoundaryContract::test_boundary_violations_raise_param_error`
+- `tests/kernel/test_facade_preview.py::TestFacadePreview::test_bad_id_is_param_error`
+- `tests/kernel/test_facade_preview.py::TestFacadePreview::test_dataset_without_files_is_notfound`
+- `tests/kernel/test_facade_preview.py::TestFacadePreview::test_preview_by_dataset_id`
 
 ### `design.contract` — 契约快照（门面 API/CLI/退出码/schema/注册表）
 
@@ -1488,6 +1583,8 @@
 - `tests/guards/test_descriptor_contract.py::test_every_task_source_is_orderable_in_sources_registry`
 - `tests/guards/test_descriptor_contract.py::test_every_task_source_is_orderable_in_sources_registry`
 - `tests/guards/test_descriptor_contract.py::test_every_task_source_is_orderable_in_sources_registry`
+- `tests/guards/test_descriptor_contract.py::test_every_task_source_is_orderable_in_sources_registry`
+- `tests/guards/test_descriptor_contract.py::test_marked_fields_actually_reject_traversal`
 - `tests/guards/test_descriptor_contract.py::test_marked_fields_actually_reject_traversal`
 - `tests/guards/test_descriptor_contract.py::test_marked_fields_actually_reject_traversal`
 - `tests/guards/test_descriptor_contract.py::test_marked_fields_actually_reject_traversal`
@@ -1504,6 +1601,8 @@
 - `tests/guards/test_descriptor_contract.py::test_path_feeding_fields_are_declared_safe`
 - `tests/guards/test_descriptor_contract.py::test_path_feeding_fields_are_declared_safe`
 - `tests/guards/test_descriptor_contract.py::test_path_feeding_fields_are_declared_safe`
+- `tests/guards/test_descriptor_contract.py::test_path_feeding_fields_are_declared_safe`
+- `tests/guards/test_descriptor_contract.py::test_task_registry_and_descriptors_agree`
 - `tests/guards/test_descriptor_contract.py::test_task_registry_and_descriptors_agree`
 - `tests/guards/test_descriptor_contract.py::test_task_registry_and_descriptors_agree`
 - `tests/guards/test_descriptor_contract.py::test_task_registry_and_descriptors_agree`

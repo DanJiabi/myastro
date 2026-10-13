@@ -316,3 +316,23 @@ class TestDoctorInitBackupRestore:
         code, _, err = run(capsys, "restore", str(tmp_path / "nope"))
         assert code == cli.EXIT_CODES["ParamError"]
         assert "备份里没有 astro.db" in err and "Traceback" not in err
+
+    @pytest.mark.cap("present.cli")
+    def test_preview_command(self, env, capsys, tmp_path):
+        """preview 输出嗅探类型与 schema；#id 形式走账本解析。"""
+        import pandas as pd
+        f = tmp_path / "x.parquet"
+        pd.DataFrame({"a": [1, 2]}).to_parquet(f)
+        code, out, _ = run(capsys, "preview", str(f))
+        assert code == 0 and "【parquet】" in out and "schema" in out and "行数：2" in out
+
+    @pytest.mark.cap("present.cli")
+    def test_describe_and_version(self, env, capsys):
+        """describe 输出详情与参数表；version 输出版本身份块。"""
+        code, out, _ = run(capsys, "describe", "tess")
+        assert code == 0
+        assert "前置" in out and "target" in out and "示例" in out
+        assert "（可空）" in out or "（必填）" in out
+
+        code, out, _ = run(capsys, "version")
+        assert code == 0 and "myastro" in out and "schema v8" in out

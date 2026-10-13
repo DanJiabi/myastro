@@ -31,7 +31,15 @@ def audit(db: DB | None = None) -> dict:
         rows = db.conn.execute(
             "SELECT f.id, f.path, f.size, f.sha256 FROM files f").fetchall()
         report = {"total": len(rows), "ok": 0, "missing": 0,
-                  "size_mismatch": 0, "corrupt": 0, "baselined": 0}
+                  "size_mismatch": 0, "corrupt": 0, "baselined": 0,
+                  # 账本说"有"但没有文件的数据集（空结果 empty=true 除外）——
+                  # 真实事故：取数成功却未落盘/未登记（#39/#27），audit 必须能发现
+                  "unlinked": db.conn.execute(
+                      "SELECT count(*) FROM datasets d"
+                      " LEFT JOIN files f ON f.dataset_id = d.id"
+                      " WHERE f.id IS NULL"
+                      " AND COALESCE(json_extract(d.meta_json, '$.empty'), 0) = 0"
+                  ).fetchone()[0]}
         for r in rows:
             p = Path(r["path"])
             if not p.exists():
@@ -59,9 +67,24 @@ def audit(db: DB | None = None) -> dict:
 
 
 def audit_detail(kind: str, limit: int = 50) -> list[dict]:
-    """问题明细（missing/size_mismatch/corrupt 的具体文件）。corrupt 需先有基线。"""
+    """问题明细（missing/size_mismatch/corrupt 的具体文件 + unlinked 的数据集）。
+
+    corrupt 需先有基线。
+    """
     db = DB().init()
     out = []
+    if kind == "unlinked":
+        for r in db.conn.execute(
+                "SELECT d.id, d.source, d.target, d.params_json FROM datasets d"
+                " LEFT JOIN files f ON f.dataset_id = d.id"
+                " WHERE f.id IS NULL"
+                " AND COALESCE(json_extract(d.meta_json, '$.empty'), 0) = 0"
+                " LIMIT ?", (limit,)):
+            out.append({"dataset_id": r["id"], "source": r["source"],
+                        "target": r["target"], "params": r["params_json"],
+                        "why": "数据集无任何文件登记"})
+        db.close()
+        return out
     for r in db.conn.execute(
             "SELECT f.id, f.path, f.size, f.sha256 FROM files f").fetchall():
         p = Path(r["path"])

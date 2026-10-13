@@ -24,6 +24,10 @@
         "--help",
         "-h"
       ],
+      "describe": [
+        "--help",
+        "-h"
+      ],
       "doc-sync": [
         "--help",
         "-h"
@@ -139,6 +143,11 @@
         "--help",
         "-h"
       ],
+      "preview": [
+        "--help",
+        "--lines",
+        "-h"
+      ],
       "restore": [
         "--force",
         "--help",
@@ -185,6 +194,10 @@
         "-h"
       ],
       "top": [
+        "--help",
+        "-h"
+      ],
+      "version": [
         "--help",
         "-h"
       ],
@@ -360,6 +373,11 @@
         "desc": [
           "POSITIONAL_OR_KEYWORD",
           null,
+          "str"
+        ],
+        "detail": [
+          "POSITIONAL_OR_KEYWORD",
+          "''",
           "str"
         ],
         "example_params": [
@@ -809,7 +827,7 @@
           "m_star": [
             "POSITIONAL_OR_KEYWORD",
             "None",
-            "float | None"
+            "float | tuple[float, float, float] | None"
           ],
           "n_transits_min": [
             "POSITIONAL_OR_KEYWORD",
@@ -829,7 +847,7 @@
           "r_star": [
             "POSITIONAL_OR_KEYWORD",
             "None",
-            "float | None"
+            "float | tuple[float, float, float] | None"
           ],
           "t": [
             "POSITIONAL_OR_KEYWORD",
@@ -847,6 +865,21 @@
           "POSITIONAL_OR_KEYWORD",
           null,
           "int"
+        ]
+      }
+    },
+    "preview": {
+      "kind": "function",
+      "params": {
+        "lines": [
+          "POSITIONAL_OR_KEYWORD",
+          "8",
+          "int"
+        ],
+        "target": [
+          "POSITIONAL_OR_KEYWORD",
+          null,
+          "str"
         ]
       }
     },

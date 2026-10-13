@@ -36,6 +36,12 @@
 
 > 已知覆盖缺口（如实记录）：契约快照只覆盖**函数签名**，`sources()` 返回字典里**新增字段**这类行为契约不会被快照捕获——本次靠人工登记。是否把返回结构也纳入快照，留待后续评估（见 `docs/zh/dev/change-policy.md` §5）。
 
+| 2026-10-13 | 未发布（随下一版） | `lc.transit_search` 恒星参数语义 | `r_star`/`m_star` 点值改为 ±10% 展开为区间，并支持 `(value, min, max)` 三元组 | **真实使用暴露**：0.4.2 初版只传点值不传 min/max，TLS 的 M_star_max 默认恰好 1.0，任何超太阳质量的星（如 WASP-12 M=1.47）被直接拒绝——项目 1 流程走通时撞到 | 纯修复：旧调用（不传/传点值≤1.0）行为不变 | `tests/unit/test_lc.py::test_real_run_with_super_solar_mass`（M=1.47 回归）+ 转发断言（点值展开/三元组） |
+
+| 2026-10-13 | 未发布（随下一版） | ① CLI 新增子命令 `describe`（单源详细中文描述）与 `version`（版本身份块）；② `SourceDescriptor` 新增可选字段 `detail`；③ `sources()` 字段字典新增 `optional` 键；④ ztf-lc 一句话描述修正（“IRSA 凭据”→“匿名可用”，过期信息） | 用户要求：源详情要在 CLI/TUI 可见；version 便于报 bug；ztf-lc 描述是过期错误信息 | 全部纯新增/文案修正，无破坏性变化 | `tests/cli`（describe/version）、`tests/ui/test_source_detail.py`（TUI 详情面板+Header 版本，变异验证可红）、`test_builtin_sources_have_nontrivial_detail`（文案契约，变异验证可红） |
+
+| 2026-10-13 | 未发布（随下一版） | ① CLI 新增子命令 `preview`（本地文件预览）；② 门面新增 `preview(target, lines)`（`__all__` 38 → 39，支持 `#数据集id` 账本解析）；③ `sources()` 字段字典新增 `optional` 键 | 用户要求：不打开 pandas/FITS 工具就能快速确认"账本说我有"的数据是什么 | 纯新增；无破坏性变化 | `tests/kernel/test_preview.py`（嗅探/parquet/FITS/文本，gzip 变异验证可红）、`test_facade_preview.py`（#id 解析与错误映射）、CLI/TUI 按键测试（绑定变异验证可红） |
+
 ## 快照机制的建立（2026-10-11）
 
 - 生成器 `src/myastro/contract.py`（顶层模块——放 `io/` 会违反分层：内核不许依赖 `cli`）。

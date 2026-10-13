@@ -29,6 +29,29 @@ def teardown_env():
     jobs._dest_dir_cache.clear()
 
 
+@pytest.fixture(autouse=True, scope="session")
+def _sandbox_user_paths(tmp_path_factory):
+    """会话级安全网：**任何**测试都不得触碰用户的默认数据根/账本。
+
+    真实事故（2026-10-12）：一条提交真作业的测试漏挂了 `env` fixture，
+    把 7 条幽灵作业（`disc-demo`）写进了用户的真账本
+    `~/.local/state/myastro/astro.db`——因为隔离当时是**可选**的。
+    现在在会话开始就把两个路径钉进沙箱；`env` fixture 仍可按测试覆盖。
+    """
+    import os
+
+    root = tmp_path_factory.mktemp("myastro-session-sandbox")
+    saved = {k: os.environ.get(k) for k in ("MYASTRO_DATA", "MYASTRO_DB")}
+    os.environ["MYASTRO_DATA"] = str(root / "data")
+    os.environ["MYASTRO_DB"] = str(root / "astro.db")
+    yield
+    for key, value in saved.items():
+        if value is None:
+            os.environ.pop(key, None)
+        else:
+            os.environ[key] = value
+
+
 @pytest.fixture
 def env(tmp_path, monkeypatch):
     setup_env(tmp_path, monkeypatch)

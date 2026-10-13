@@ -238,11 +238,34 @@ class TestStellarParams:
         f = np.ones_like(t)
 
         lc.transit_search(t, f, r_star=1.2, m_star=0.9)
-        assert captured["R_star"] == 1.2 and captured["M_star"] == 0.9
+        # 点值 → ±10% 展开为区间（TLS 需要密度范围构造网格；只传点值会被拒绝）
+        assert captured["R_star"] == 1.2
+        assert captured["R_star_min"] == 1.2 * 0.9
+        assert captured["R_star_max"] == 1.2 * 1.1
+        assert captured["M_star"] == 0.9
+
+        captured.clear()
+        lc.transit_search(t, f, m_star=(1.47, 1.3, 1.6))   # 三元组 → 显式区间
+        assert captured["M_star"] == 1.47
+        assert captured["M_star_min"] == 1.3 and captured["M_star_max"] == 1.6
 
         captured.clear()
         lc.transit_search(t, f)                       # 不给 → 不传这两个键
         assert "R_star" not in captured and "M_star" not in captured
+
+    def test_real_run_with_super_solar_mass(self):
+        """M_star > 1.0 必须能跑（0.4.2 初版只传点值，会被 TLS 拒绝：
+        M_star_max 默认恰好 1.0）。真实案例：WASP-12（M=1.47）在流程走通时撞到。
+        """
+        rng = np.random.default_rng(42)
+        t = np.linspace(0, 20, 2000)
+        period = 1.5
+        phase = (t % period) / period
+        flux = np.where((phase > 0.45) & (phase < 0.55), 0.99, 1.0)
+        flux = flux + rng.normal(0, 3e-4, t.size)
+        result = lc.transit_search(t, flux, period_min=0.5, period_max=3.0,
+                                   r_star=1.657, m_star=1.47)
+        assert result.period > 0 and 0 < result.depth < 1
 
     def test_real_run_with_stellar_params_is_warning_free(self):
         """真实跑一次：给了恒星参数就不该再出现 period_grid 警告。

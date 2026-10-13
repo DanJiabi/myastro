@@ -153,3 +153,15 @@ def test_marked_fields_actually_reject_traversal():
             params[f.name] = "../EVIL"
             with pytest.raises(ValueError):
                 d.build_spec(params)
+
+
+@pytest.mark.cap("source.contract")
+def test_builtin_sources_have_nontrivial_detail():
+    """每个内置源都必须有详细中文描述（describe 子命令/TUI 详情面板的文案）。
+
+    防止新增内置源时忘了写 detail 就提交（文案缺失在列表页看不出来）。
+    """
+    from myastro.descriptors import BUILTIN_SOURCES, REGISTRY
+
+    missing = [n for n in sorted(BUILTIN_SOURCES) if len(REGISTRY[n].detail) < 40]
+    assert not missing, f"内置源缺少详细描述（detail < 40 字）: {missing}"

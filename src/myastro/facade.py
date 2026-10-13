@@ -76,14 +76,48 @@ def sources() -> list[dict[str, Any]]:
              "origin": origin_of(d.name),
              "orderable": bool(d.task or d.url_key),
              "fields": [{"name": f.name, "type": f.type.__name__,
-                         "default": f.default,
+                         "default": f.default, "optional": f.optional,
                          "choices": f.choices} for f in d.fields]}
             for d in REGISTRY.values()]
 
 
 def describe(source: str) -> dict[str, Any]:
-    """单源详情（含参数表单 schema）。"""
-    return next(s for s in sources() if s["name"] == source)
+    """单源详情：摘要 + **详细中文描述** + 参数表单 schema + 示例参数。"""
+    row = next(s for s in sources() if s["name"] == source)
+    d = _descriptor(source)
+    return {**row, "detail": d.detail, "example_params": dict(d.example_params)}
+
+
+def preview(target: str, lines: int = 8) -> dict:
+    """预览本地数据文件：路径，或 `#<数据集id>`（账本解析出文件）。
+
+    返回结构化文档（kind/大小/段落），`myastro preview` 与 TUI `p` 键共用。
+    """
+    from .io.preview import preview as _preview
+
+    path = target
+    note = None
+    if target.startswith("#"):
+        from .io.db import DB
+        try:
+            dataset_id = int(target[1:])
+        except ValueError:
+            raise errors.ParamError(f"数据集 id 不是数字：{target!r}") from None
+        db = DB().init()
+        rows = db.conn.execute(
+            "SELECT path FROM files WHERE dataset_id=?", (dataset_id,)).fetchall()
+        db.close()
+        if not rows:
+            raise errors.NotFoundError(f"数据集 #{dataset_id} 没有任何文件登记")
+        path = rows[0]["path"]
+        if len(rows) > 1:
+            note = f"该数据集共 {len(rows)} 个文件，预览第一个；其余："
+    doc = _preview(path, lines=lines)
+    if note:
+        from .io.preview import Section
+        doc.sections.insert(0, Section("账本", [note]
+                                       + [f"  {r['path']}" for r in rows[1:6]]))
+    return doc.as_dict()
 
 
 def register_source(descriptor: SourceDescriptor, *,

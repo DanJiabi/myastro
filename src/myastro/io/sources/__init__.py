@@ -107,7 +107,7 @@ SOURCES: dict[str, dict] = {e["name"]: e for e in [
            "from myastro.io.sources.vizier import vizier_cone\n"
            'r = vizier_cone("II/246", 180.0, 0.0)',
            note="catalog 形如 II/246（2MASS）；需指定星表号"),
-    _entry("ztf-lc", "ZTF 光变曲线（IRSA 凭据）", "ok",
+    _entry("ztf-lc", "ZTF 光变曲线（匿名可用）", "ok",
            "python", "ztfquery.lightcurve", "parquet",
            "from myastro.io.sources.ztf_lc import ztf_lightcurve\n"
            'r = ztf_lightcurve(97.14, 30.49, radius_arcsec=5)',

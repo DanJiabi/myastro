@@ -226,8 +226,9 @@ class TransitResult:
 def transit_search(t: np.ndarray, flux: np.ndarray,
                    period_min: float = 0.5, period_max: float = 3.0,
                    n_transits_min: int = 3,
-                   r_star: float | None = None,
-                   m_star: float | None = None) -> TransitResult:
+                   r_star: float | tuple[float, float, float] | None = None,
+                   m_star: float | tuple[float, float, float] | None = None,
+                   ) -> TransitResult:
     """TLS 凌星搜索。
 
     两处焊死的坑（早期真实故障）：
@@ -236,11 +237,17 @@ def transit_search(t: np.ndarray, flux: np.ndarray,
     2. **depth 语义修正**——TLS 的 `depth` 是凌内/凌外通量比（如 0.984），
        真深度 = 1 − depth（如 1.6%）；这里直接返回真深度
 
-    `r_star` / `m_star`（太阳半径/质量，单位同 TLS）是**可选**的恒星参数：
-    不传时 TLS 会按默认值（1.0/1.0）构造周期网格，并在网格过稀时警告
-    （"period_grid defaults to R_star=1 and M_star=1 ..."）——那条警告是**真问题**
-    的提示（网格可能不足以覆盖真实周期），不是噪音，所以我们不抑制它，
-    而是把参数暴露出来让调用方给出真实值。传了就转发给 TLS。
+    `r_star` / `m_star`（太阳半径/质量）是**可选**的恒星参数，两种形态：
+
+    - **点值**（float）：按 ±10% 展开为区间——TLS 用恒星密度范围构造周期网格，
+      只给点值会因"密度零宽"触发它的回退警告；
+    - **三元组** `(value, min, max)`：显式给出不确定区间（例如文献值 ±1σ）。
+
+    注意：低密度恒星（如 WASP-12，ρ≈0.32 ρ☉）即使给了精确参数，
+    TLS 仍可能报 "period_grid defaults ..."——那表示密度推出的网格点数低于下限，
+    它回退到太阳默认值（更密）继续搜索。**结果仍然有效**；该警告在此种情形下是
+    信息性的，不是错误。（真实踩坑：0.4.2 初版只传点值不传 min/max，
+    任何 M_star>1.0 的星都会被 TLS 直接拒绝。）
     """
     from transitleastsquares import transitleastsquares
 
@@ -248,10 +255,14 @@ def transit_search(t: np.ndarray, flux: np.ndarray,
     flux = normalize(flux)
     kwargs: dict = {"period_min": period_min, "period_max": period_max,
                     "n_transits_min": n_transits_min}
-    if r_star is not None:
-        kwargs["R_star"] = float(r_star)
-    if m_star is not None:
-        kwargs["M_star"] = float(m_star)
+    for value, prefix in ((r_star, "R_star"), (m_star, "M_star")):
+        if value is None:
+            continue
+        if isinstance(value, tuple):
+            v, lo, hi = (float(x) for x in value)
+        else:
+            v, lo, hi = float(value), float(value) * 0.9, float(value) * 1.1
+        kwargs[prefix], kwargs[f"{prefix}_min"], kwargs[f"{prefix}_max"] = v, lo, hi
     res = transitleastsquares(t, flux).power(**kwargs)
     return TransitResult(
         period=float(res.period),

@@ -23,7 +23,11 @@ def _fn(ctx) -> FetchResult:
     df, meta = _download_mpc(p["target"], p["number"],
                              p.get("step_days") or 1.0)
     name = p["target"].replace(" ", "_")
-    dest = ctx.dest_dir / f"eph_{name}.parquet"
+    step = p.get("step_days") or 1.0
+    # 文件名必须编码**所有**影响内容的参数（number/step_days）——真实事故：
+    # number=5 与 number=10 曾共用 `eph_Ceres.parquet`，后到者覆盖先到者的内容，
+    # 账本上先到者就变成"有 dataset 无文件"的幽灵（#19/#39）。
+    dest = ctx.dest_dir / f"eph_{name}_n{p['number']}_s{step}d.parquet"
     write_parquet(df, dest)
     return FetchResult(paths=[dest], dataset_id=-1, meta=meta)
 
